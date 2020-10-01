@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const c = require('./controller')
+const c = require('./controller');
 
 // ADMIN SESSION
 router.get('/admin', c.authToken, c.onlyAdmin);
@@ -8,10 +8,13 @@ router.get('/admin', c.authToken, c.onlyAdmin);
 // GET REQUEST
 router.get('/', c.signup);
 router.get('/login', c.login);
+router.get('/logo', c.logo);
 
 // POST REQUEST
 router.post('/', c.signup);
 router.post('/login', c.login);
+router.post('/razorpay', c.payment); 
+router.post('/verification', c.verification);
 
 // PUT REQUEST
 

@@ -2,7 +2,10 @@ require('dotenv').config();
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { User, Question } = require('./model');
+const Razorpay = require('razorpay');
+const { User } = require('./model');
+const shortid = require('shortid');
+const path = require('path'); 
 
 const ROLE = {
     BASIC: 'basic',
@@ -10,6 +13,10 @@ const ROLE = {
 };
 
 // WORKING
+logo = (req, res) => {
+    res.sendFile(path.join(__dirname, '../logo.svg')); 
+}
+
 signup = async (req, res) => {
     // GET POST
     if(req.method === 'GET'){
@@ -49,6 +56,45 @@ signup = async (req, res) => {
     }
 };
 
+// RAZORPAY FUNCTIONS 
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY,
+    key_secret: process.env.RAZORPAY_SECRET
+});
+
+verification = async (req, res) => {
+    // verification logic 
+    const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
+    console.log("VERIFICATION: ", req.body);
+    
+    res.json({ status: 'ok'});
+}
+
+payment = async (req, res) => {
+    const payment_capture = 1;
+    const amount = 499;
+    const currency = 'INR'
+
+    const options = {
+        amount: amount*100, 
+        currency, 
+        receipt: shortid.gene, 
+        payment_capture
+    }
+
+    try {
+        const response = await razorpay.orders.create(options);
+        console.log("PAYMENT: ", response);
+        res.json({
+            id: response.id, 
+            currency: response.currency,
+            amount: response.amount
+        }); 
+    } catch (error) {
+        console.log("ERROR (PAYMENT) : ", error); 
+    }
+}
+
 // WORKING
 login = async (req, res) => {
     // GET  POST
@@ -59,8 +105,8 @@ login = async (req, res) => {
         } catch (err) {
             res.status(500).json({message: err.message});
         }
-    } 
-
+      } 
+  
     else if (req.method === 'POST') {
         const user = users.find(user => user.username === req.body.username)
         if(user == null) {
@@ -122,7 +168,7 @@ onlyAdmin= (req, res, next) => {
 }
 
 module.exports = {
-    login, signup,
+    login, signup, payment, verification, logo, 
     // MIDDLE WARES
     authToken, private, allowAdmin, onlyAdmin
 };
