@@ -6,17 +6,18 @@ const c = require('./controller');
 router.get('/admin', c.authToken, c.onlyAdmin);
 
 // GET REQUEST
-router.get('/', c.signup);
-router.get('/login', c.login);
+router.get('/signup', c.signup);
 router.get('/logo', c.logo);
+router.get('/login', c.login);
 
 // POST REQUEST
-router.post('/', c.signup);
+router.post('/signup', c.signup);
 router.post('/login', c.login);
 router.post('/razorpay', c.payment); 
 router.post('/verification', c.verification);
 
 // PUT REQUEST
+
 
 // DELETE REQUEST
 

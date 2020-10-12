@@ -17,45 +17,6 @@ logo = (req, res) => {
     res.sendFile(path.join(__dirname, '../logo.svg')); 
 }
 
-signup = async (req, res) => {
-    // GET POST
-    if(req.method === 'GET'){
-        try {
-            const users = await User.find()
-            res.status(200).json(users);
-        } catch (err) {
-            res.status(500).json({message: err.message});
-        }
-    }
-
-    else if (req.method === 'POST') {
-        try {
-            const users = await User.find()
-            const user = users.find(user => user.username === req.body.username)
-            if(user != null) return res.status(404).json({message: 'username Already Taken'});
-
-            var role = null;
-            if (req.body.role === undefined) role = ROLE.BASIC; else role = ROLE.ADMIN;
-
-            const hashedpassword = await bcrypt.hash(req.body.password, 10);
-
-            const new_user = new User({
-                username: req.body.username.toLowerCase(),
-                password: hashedpassword,
-                numberQue: 0,
-                role: role
-            });
-            
-            const waiteduser = await new_user.save();
-
-            const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
-            res.json({accessToken: accessToken}).status(201);
-        } catch (err) {
-            res.status(400).json({ message: `post internal error: ${err}` });
-        }
-    }
-};
-
 // RAZORPAY FUNCTIONS 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY,
@@ -94,6 +55,45 @@ payment = async (req, res) => {
         console.log("ERROR (PAYMENT) : ", error); 
     }
 }
+
+signup = async (req, res) => {
+    // GET POST
+    if(req.method === 'GET'){
+        try {
+            const users = await User.find()
+            res.status(200).json(users);
+        } catch (err) {
+            res.status(500).json({message: err.message});
+        }
+    }
+
+    else if (req.method === 'POST') {
+        try {
+            const users = await User.find()
+            const user = users.find(user => user.username === req.body.username)
+            if(user != null) return res.status(404).json({message: 'username Already Taken'});
+
+            var role = null;
+            if (req.body.role === undefined) role = ROLE.BASIC; else role = ROLE.ADMIN;
+
+            const hashedpassword = await bcrypt.hash(req.body.password, 10);
+
+            const new_user = new User({
+                username: req.body.username.toLowerCase(),
+                password: hashedpassword,
+                numberQue: 0,
+                role: role
+            });
+            
+            const waiteduser = await new_user.save();
+
+            const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
+            res.json({accessToken: accessToken}).status(201);
+        } catch (err) {
+            res.status(400).json({ message: `post internal error: ${err}` });
+        }
+    }
+};
 
 // WORKING
 login = async (req, res) => {
