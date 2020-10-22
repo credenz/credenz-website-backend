@@ -1,63 +1,13 @@
 require('dotenv').config();
 
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const Razorpay = require('razorpay');
-const { User } = require('./model');
-const shortid = require('shortid');
-const path = require('path'); 
-
-const ROLE = {
-    BASIC: 'basic',
-    ADMIN: 'admin'
-};
-
-// WORKING
-logo = (req, res) => {
-    res.sendFile(path.join(__dirname, '../logo.svg')); 
-}
-
-// RAZORPAY FUNCTIONS 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY,
-    key_secret: process.env.RAZORPAY_SECRET
-});
-
-verification = async (req, res) => {
-    // verification logic 
-    const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-    console.log("VERIFICATION: ", req.body);
-    
-    res.json({ status: 'ok'});
-}
-
-payment = async (req, res) => {
-    const payment_capture = 1;
-    const amount = 499;
-    const currency = 'INR'
-
-    const options = {
-        amount: amount*100, 
-        currency, 
-        receipt: shortid.gene, 
-        payment_capture
-    }
-
-    try {
-        const response = await razorpay.orders.create(options);
-        console.log("PAYMENT: ", response);
-        res.json({
-            id: response.id, 
-            currency: response.currency,
-            amount: response.amount
-        }); 
-    } catch (error) {
-        console.log("ERROR (PAYMENT) : ", error); 
-    }
-}
+const bcrypt = require('bcrypt');
+const { User, Event } = require('./model');
+// const Razorpay = require('razorpay');
+// const shortid = require('shortid');
+// const path = require('path'); 
 
 signup = async (req, res) => {
-    // GET POST
     if(req.method === 'GET'){
         try {
             const users = await User.find()
@@ -73,20 +23,21 @@ signup = async (req, res) => {
             const user = users.find(user => user.username === req.body.username)
             if(user != null) return res.status(404).json({message: 'username Already Taken'});
 
-            var role = null;
-            if (req.body.role === undefined) role = ROLE.BASIC; else role = ROLE.ADMIN;
-
             const hashedpassword = await bcrypt.hash(req.body.password, 10);
-
+            
             const new_user = new User({
                 username: req.body.username.toLowerCase(),
+                name: req.body.name,
                 password: hashedpassword,
-                numberQue: 0,
-                role: role
+                email: req.body.email,
+                phoneno: req.body.phoneno,
+                clgname: req.body.clgname,
+                present_events: [],
+                played_events: []
             });
             
             const waiteduser = await new_user.save();
-
+            
             const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
             res.json({accessToken: accessToken}).status(201);
         } catch (err) {
@@ -95,9 +46,7 @@ signup = async (req, res) => {
     }
 };
 
-// WORKING
 login = async (req, res) => {
-    // GET  POST
     const users = await User.find()
     if(req.method === 'GET'){
         try {
@@ -106,11 +55,13 @@ login = async (req, res) => {
             res.status(500).json({message: err.message});
         }
       } 
-  
+
     else if (req.method === 'POST') {
-        const user = users.find(user => user.username === req.body.username)
-        if(user == null) {
-            return res.json({ message: 'User Not Found'}).status(400)
+        var user;
+        user = users.find(user => user.username === req.body.username)
+        if(!user) {
+            user = users.find(user => user.email === req.body.username); 
+            if (!user) return res.json({ message: 'User Not Found'}).status(400); 
         }
 
         try {
@@ -125,6 +76,52 @@ login = async (req, res) => {
         }
     }
 };
+
+// static all events
+allevents = async (req, res) => {
+    // GET
+    const events = await Event.find()
+    if(req.method === 'GET'){
+        try {
+            res.status(200).json(events);
+        } catch (err) {
+            res.status(500).json({message: err.message});
+        }
+    } 
+};
+
+// played events by the user
+played = async (req, res) => {
+    const user = await User.find()
+    if(req.method === 'GET'){
+        try {
+
+        } catch (err) {
+            res.status(500).json({message: err.message});
+        }
+    }
+}
+
+// yet to play events by the user
+present = async (req, res) => {
+    const user = await User.find()
+    if(req.method === 'GET'){
+        try {
+
+        } catch (err) {
+            res.status(500).json({message: err.message});
+        }
+    }
+}
+
+// Event Login 
+eventlogin = async (req, res) => {
+
+}
+
+registerEvent = async (req, res) => {
+    
+}
 
 // MIDDLE WARES //
 // WORKING
@@ -168,7 +165,8 @@ onlyAdmin= (req, res, next) => {
 }
 
 module.exports = {
-    login, signup, payment, verification, logo, 
+    login, signup, allevents,
+    // payment, verification, 
     // MIDDLE WARES
     authToken, private, allowAdmin, onlyAdmin
 };
