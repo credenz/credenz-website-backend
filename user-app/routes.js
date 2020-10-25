@@ -6,15 +6,15 @@ const c = require('./controller');
 router.get('/allusers', c.allusers);
 router.get('/allevents', c.allevents);
 router.get('/allregs', c.allregs);
-// router.get('/:username/played', c.played);
-// router.get('/:username/present', c.present);
+router.get('/:username/played', c.played);
+router.get('/:username/present', c.present);
 
 // POST REQUEST
 router.post('/signup', c.signup);
 router.post('/login', c.login);
 router.post('/addevent', c.allevents);
 router.post('/:username/:event', c.checkUserParams, c.register);
-// router.post('/eventlogin', c.eventlogin);
+router.post('/eventlogin', c.eventlogin);
 // router.post('/razorpay', c.payment); 
 // router.post('/verification', c.verification);
 

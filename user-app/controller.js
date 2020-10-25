@@ -3,9 +3,11 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { User, Event, Register } = require('./model');
-// const Razorpay = require('razorpay');
-// const shortid = require('shortid');
-// const path = require('path'); 
+
+const ROLE = {
+    BASIC: 'basic',
+    ADMIN: 'admin'
+};
 
 // WORKING
 allusers = async (req, res) => {
@@ -47,7 +49,8 @@ signup = async (req, res) => {
                 password: hashedpassword,
                 email: req.body.email,
                 phoneno: req.body.phoneno,
-                clgname: req.body.clgname
+                clgname: req.body.clgname,
+                role: ROLE.BASIC
             });
             
             const waiteduser = await new_user.save();
@@ -119,7 +122,7 @@ allevents = async (req, res) => {
     } 
 };
 
-// :username/:id
+// WORKING
 register = async (req, res) => {
     if (req.method === 'POST') {
         try {
@@ -146,42 +149,35 @@ register = async (req, res) => {
     }
 }
 
-/* 
-// played events by the user
+// WORKING 
 played = async (req, res) => {
     if(req.method === 'GET'){
         try {
-            const registrations = await Register.find(); 
-
-            var regs = registrations.find(reg => reg.username == req.user.username); 
-            regs = regs.find(reg => reg.played==true); 
-
-            res.json(regs).status(200)
-
+            const registrations = await Register.find({username: req.params.username, played: true});
+            res.status(200).json(registrations); 
         } catch (err) {
             res.status(500).json({message: err.message});
         }
     }
 }
 
-/*
-// yet to play events by the user
+// WORKING 
 present = async (req, res) => {
-    const user = await User.find()
     if(req.method === 'GET'){
         try {
-
+            const registrations = await Register.find({username: req.params.username, played: false});
+            res.status(200).json(registrations); 
         } catch (err) {
             res.status(500).json({message: err.message});
         }
     }
 }
 
-// Event Login 
 eventlogin = async (req, res) => {
-
+    if (req.method==='POST')  {
+        
+    }
 }
-*/ 
 
 // MIDDLE WARES //
 // WORKING
@@ -241,7 +237,7 @@ checkUserParams = async (req, res, next) => {
 }
 
 module.exports = {
-    allusers, allevents, allregs, login, signup, allevents, register, 
+    allusers, allevents, allregs, login, signup, allevents, register, played, present, 
     // payment, verification, 
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
