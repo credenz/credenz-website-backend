@@ -14,7 +14,7 @@ router.post('/signup', c.signup);
 router.post('/login', c.login);
 router.post('/addevent', c.allevents);
 router.post('/:username/:event', c.checkUserParams, c.register);
-router.post('/eventlogin', c.eventlogin);
+// router.post('/eventlogin', c.eventlogin);
 // router.post('/razorpay', c.payment); 
 // router.post('/verification', c.verification);
 

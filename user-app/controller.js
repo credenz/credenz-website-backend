@@ -173,11 +173,14 @@ present = async (req, res) => {
     }
 }
 
+/* 
 eventlogin = async (req, res) => {
     if (req.method==='POST')  {
-        
+
     }
 }
+
+*/ 
 
 // MIDDLE WARES //
 // WORKING
