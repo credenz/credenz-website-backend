@@ -37,8 +37,7 @@ allregs = async (req, res) => {
 signup = async (req, res) => {
     if (req.method === 'POST') {
         try {
-            const users = await User.find()
-            const user = users.find(user => user.username === req.body.username)
+            const user = await User.findOne({username: req.body.username});  
             if(user != null) return res.status(404).json({message: 'username Already Taken'});
 
             const hashedpassword = await bcrypt.hash(req.body.password, 10);
@@ -65,12 +64,10 @@ signup = async (req, res) => {
 
 // WORKING 
 login = async (req, res) => {
-    const users = await User.find(); 
     if (req.method === 'POST') {
-        var user;
-        user = users.find(user => user.username === req.body.username)
+        var user = await User.findOne({username: req.body.username});
         if(!user) {
-            user = users.find(user => user.email === req.body.username); 
+            user = await User.findOne({email: req.body.username}); 
             if (!user) return res.json({ message: 'User Not Found'}).status(400); 
         }
 
@@ -133,18 +130,23 @@ register = async (req, res) => {
                 var char = Math.floor(Math.random() * str.length + 1); 
                 pass += str.charAt(char) 
             } 
-            
-            const reg = new Register({
-                event_username: req.params.event,
-                username: req.params.username, 
-                price: req.params_event.event_price,
-                random_pw: pass,
-                played: false
-            });
-            const waitedreg = await reg.save();
-            res.json(waitedreg).status(201);
+            const eventreg = await Register.findOne({username: req.params.username, event_username: req.params.event, played: false});
+
+            if (eventreg == null) {
+                const reg = new Register({
+                    event_username: req.params.event,
+                    username: req.params.username, 
+                    price: req.params_event.event_price,
+                    random_pw: pass,
+                    played: false
+                });
+                const waitedreg = await reg.save();
+                res.json(waitedreg).status(201);
+            } 
+
+            res.json({message: "Event Already Registered!"})
         } catch (err) {
-            res.status(400).json({ message: `post internal error: ${err}` });
+            res.status(400).json({ message: `Post Internal Error: ${err}` });
         }
     }
 }
@@ -173,14 +175,30 @@ present = async (req, res) => {
     }
 }
 
-/* 
+// WORKING 
 eventlogin = async (req, res) => {
     if (req.method==='POST')  {
-
+        var user;
+        user = await User.findOne({username: req.body.username}); 
+        if(!user) {
+            user = await User.findOne({email: req.body.email});
+            if (!user) return res.json({ allow: false, message: 'User Not Found'}).status(400);
+        }
+        
+        try {
+            const reg = Register.findOne({username: req.body.username, event_username: req.body.event, played: false}); 
+            if (reg.random_pw==req.body.password){
+                // reg.played = true;                 
+                // await reg.save();
+                res.json({allow: true}).status(200);
+            } else {
+                res.json({ allow: false, message: 'Password Wrong!'}).status(401); 
+            }
+        } catch (err) {
+            res.status(500).json({allow: false, message: `Internal error ${err}`});
+        }
     }
 }
-
-*/ 
 
 // MIDDLE WARES //
 // WORKING
@@ -213,12 +231,12 @@ allowAdmin = (req, res, next) => {
         next();
         return;
     }
-    return res.status(403).json({ message: 'accessed not allowed!'});
+    return res.status(403).json({ message: 'Accessed not allowed!'});
 }
 
 onlyAdmin= (req, res, next) => {
     if(req.user.role != ROLE.ADMIN){
-        res.status(403).json({ message: 'accessed not allowed!'});
+        res.status(403).json({ message: 'Accessed not allowed!'});
     }
     next();
 }
@@ -240,7 +258,7 @@ checkUserParams = async (req, res, next) => {
 }
 
 module.exports = {
-    allusers, allevents, allregs, login, signup, allevents, register, played, present, 
+    allusers, allevents, allregs, login, signup, allevents, register, played, present, eventlogin, 
     // payment, verification, 
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
