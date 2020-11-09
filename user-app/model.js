@@ -8,7 +8,7 @@ const user_schema = mongoose.Schema({
     clgname: { type: String, require: true },
     name : { type: String, require: true },
     role: {type: String, require: true}
-})
+}); 
 
 const event_schema = mongoose.Schema({
     event_username: { type: String, require: true, lowercase: true, unique: true},
@@ -16,7 +16,7 @@ const event_schema = mongoose.Schema({
     event_des: { type: String, require: true },
     event_time: { type: Date, require: true }, 
     event_price: {type: Number, require: true}
-})
+}); 
 
 const register_schema = mongoose.Schema({
     event_username: {type: String, require: true, lowercase: true},
@@ -29,12 +29,19 @@ const register_schema = mongoose.Schema({
     // trans_id: {type: String, require: true},
 }); 
 
+const update_schema = mongoose.Schema({
+    headline: {type: String, require: true},
+    info: {type: String, require: true}
+})
+
 User = mongoose.model('User', user_schema, 'users');
 Event = mongoose.model('Event', event_schema, 'events');
 Register = mongoose.model('Register', register_schema, 'register');
+Update = mongoose.model('Update', update_schema, 'updates');
 
 module.exports = {
     User, 
     Event,
-    Register
+    Register, 
+    Update
 }

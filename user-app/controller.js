@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { User, Event, Register } = require('./model');
+const { User, Event, Register, Update } = require('./model');
 
 const ROLE = {
     BASIC: 'basic',
@@ -117,6 +117,22 @@ allevents = async (req, res) => {
             res.status(400).json({ message: `post internal error: ${err}` });
         }
     } 
+
+    if(req.method === 'PUT') {
+        try {
+            var oneevent = await Event.findOne({ event_username: req.params.event}); 
+            oneevent.event_name = req.body.event_name; 
+            oneevent.event_time = req.body.event_time;
+            oneevent.event_price = req.body.event_price; 
+            oneevent.event_des = req.body.event_des; 
+            await oneevent.save(); 
+            console.log(oneevent); 
+
+            return res.json(oneevent).status(200); 
+        } catch (err) {
+            return res.json({message: `Internsal Error: ${err}`}).status(500)
+        }
+    }
 };
 
 // WORKING
@@ -131,7 +147,6 @@ register = async (req, res) => {
                 pass += str.charAt(char) 
             } 
             const eventreg = await Register.findOne({username: req.params.username, event_username: req.params.event, played: false});
-
             if (eventreg == null) {
                 const reg = new Register({
                     event_username: req.params.event,
@@ -143,7 +158,6 @@ register = async (req, res) => {
                 const waitedreg = await reg.save();
                 res.json(waitedreg).status(201);
             } 
-
             res.json({message: "Event Already Registered!"})
         } catch (err) {
             res.status(400).json({ message: `Post Internal Error: ${err}` });
@@ -200,13 +214,65 @@ eventlogin = async (req, res) => {
     }
 }
 
+// WORKING
+updates = async (req, res) => {
+    if (req.method == 'GET') {
+        var updates = await Update.find();
+        return res.json(updates).status(200);
+    } 
+    else if (req.method == 'POST') {
+        const update = new Update({
+            headline: req.body.headline,
+            info: req.body.info
+        }); 
+        var waitedupdate = await update.save(); 
+        res.json(waitedupdate).status(200); 
+    }
+}
+
+// WORKING
+updateuser = async (req, res) => {
+    if (req.method==='PUT') {
+        const hashedpassword = await bcrypt.hash(req.body.password, 10);
+        try {
+            var user = await User.findOne({username: req.user.username});
+            user.password = hashedpassword;
+            user.email = req.body.email;
+            user.phoneno = req.body.phoneno;
+            user.clgname = req.body.clgname;
+            user.name = req.body.name;
+            await user.save();
+
+            // for await
+            console.log(req.user);
+            console.log(user);
+            
+            return res.json(user).status(200);     
+        } catch (err) {
+            return res.json({message: `Internal Error ${err}`}).status(500); 
+        }
+    }
+}
+
+// Working
+eventusers = async (req, res) => {
+    if (req.method==='GET'){
+        try {
+            eventreg = await Register.find({event_username: req.params.event});
+            return res.json(eventreg).status(200);    
+        } catch (err) {
+            return res.json(`Internal Server Error: ${err}`).status(500);
+        }
+    }
+}
+
 // MIDDLE WARES //
 // WORKING
 authToken = (req, res, next) => {
     const authHeader = req.headers['authorization']
     // Bearer TOKEN
     const token = authHeader && authHeader.split(' ')[1]
-    if(token == null) return res.status(401).json({message: 'invaild token'});
+    if(token == null) return res.status(401).json({message: 'Invaild Token'});
     
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async(err, user) => {
         if (err) {
@@ -217,11 +283,11 @@ authToken = (req, res, next) => {
         req.user = user;
         next();
     });
-};
+}
 
 private = (req, res, next) => {
     if (req.user.username !== req.params.username) {    
-        res.json({ message: 'You Can only view your Questions'}).status(400);
+        res.json({ message: 'You can only view your Data'}).status(400);
     }
     next();
 }
@@ -258,7 +324,7 @@ checkUserParams = async (req, res, next) => {
 }
 
 module.exports = {
-    allusers, allevents, allregs, login, signup, allevents, register, played, present, eventlogin, 
+    allusers, allevents, allregs, login, signup, register, played, present, eventlogin, eventusers, updateuser, updates, 
     // payment, verification, 
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
