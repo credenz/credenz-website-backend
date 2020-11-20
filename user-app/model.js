@@ -10,6 +10,15 @@ const user_schema = mongoose.Schema({
     role: {type: String, require: true}
 }); 
 
+const teams_schema = mongoose.Schema({
+    team_username: {type: String, require: true, unique: true, lowercase: true},
+    no_of_players: {type: Number, require: true},
+    players: [{type: String, unique:true, lowercase:true}],
+    count: {type: Number},
+    logedin_players: [{type: String, unique: true, lowercase:true}],
+    event_name: {type: String}
+})
+
 const event_schema = mongoose.Schema({
     event_username: { type: String, require: true, lowercase: true, unique: true},
     event_name: { type: String, require: true},
@@ -38,10 +47,12 @@ User = mongoose.model('User', user_schema, 'users');
 Event = mongoose.model('Event', event_schema, 'events');
 Register = mongoose.model('Register', register_schema, 'register');
 Update = mongoose.model('Update', update_schema, 'updates');
+Teams = mongoose.model('Teams', teams_schema, 'teams');
 
 module.exports = {
     User, 
     Event,
     Register, 
-    Update
+    Update,
+    Teams
 }

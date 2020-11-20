@@ -12,8 +12,8 @@ router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c
 router.post('/signup', c.signup);
 router.post('/login', c.login);
 router.post('/:username/:event', c.authToken, c.checkUserParams, c.register);
-// router.post('/razorpay', c.payment); 
-// router.post('/verification', c.verification);
+router.post('/razorpay', c.payment); 
+router.post('/verification', c.verification);
 
 // PUT REQUEST
 router.put('/:username/update', c.authToken, c.private, c.updateuser); 

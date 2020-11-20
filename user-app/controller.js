@@ -2,7 +2,9 @@ require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const { User, Event, Register, Update } = require('./model');
+const { User, Event, Register, Update, Teams } = require('./model');
+const Razorpay = require('razorpay')
+const shortid = require('shortid')
 
 const ROLE = {
     BASIC: 'basic',
@@ -254,7 +256,7 @@ updateuser = async (req, res) => {
     }
 }
 
-// Working
+// WORKING
 eventusers = async (req, res) => {
     if (req.method==='GET'){
         try {
@@ -265,6 +267,50 @@ eventusers = async (req, res) => {
         }
     }
 }
+
+// RAZORPAY FUNCTIONS 
+// WORKING
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY,
+    key_secret: process.env.RAZORPAY_SECRET
+});
+
+verification = async (req, res) => {
+    // verification logic 
+    //const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
+    // Still remaining
+    console.log("VERIFICATION: ", req.body);
+    res.json({ status: 'ok'});
+}
+
+// WORKING
+payment = async (req, res) => {
+    const payment_capture = 1;
+    const amount = 499;
+    const currency = 'INR'
+
+    const options = {
+        amount: amount*100, 
+        currency, 
+        receipt: shortid.generate(), 
+        payment_capture
+    }
+
+    try {
+        const response = await razorpay.orders.create(options);
+        console.log("PAYMENT: ", response);
+        res.json({
+            id: response.id, 
+            currency: response.currency,
+            amount: response.amount
+        }); 
+    } catch (error) {
+        console.log("ERROR (PAYMENT) : ", error); 
+    }
+}
+
+
+
 
 // MIDDLE WARES //
 // WORKING
@@ -324,7 +370,7 @@ checkUserParams = async (req, res, next) => {
 }
 
 module.exports = {
-    allusers, allevents, allregs, login, signup, register, played, present, eventlogin, eventusers, updateuser, updates, 
+    allusers, allevents, allregs, login, signup, register, played, present, eventlogin, eventusers, updateuser, updates, payment, verification,
     // payment, verification, 
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
