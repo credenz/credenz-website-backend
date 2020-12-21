@@ -12,6 +12,7 @@ const ROLE = {
 };
 
 // WORKING
+// Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 allusers = async (req, res) => {
     if(req.method === 'GET'){
         try {
@@ -24,6 +25,7 @@ allusers = async (req, res) => {
 }
 
 // WORKING
+// Get ('/allregs', c.authToken, c.onlyAdmin, c.allregs)
 allregs = async (req, res) => {
     if(req.method === 'GET'){
         try {
@@ -35,7 +37,21 @@ allregs = async (req, res) => {
     }
 }
 
+// WORKING
+// Get('/allteams', c.authToken, c.onlyAdmin, c.allteams)
+allteams = async (req, res) => {
+    if(req.method === 'GET'){
+        try {
+            const teams = await Teams.find()
+            res.status(200).json(teams);
+        } catch (err) {
+            res.status(500).json({message: err.message});
+        }
+    }
+}
+
 // WORKING 
+// Post('/signup', c.signup)
 signup = async (req, res) => {
     if (req.method === 'POST') {
         try {
@@ -65,6 +81,7 @@ signup = async (req, res) => {
 };
 
 // WORKING 
+// Post('/login', c.login)
 login = async (req, res) => {
     if (req.method === 'POST') {
         var user = await User.findOne({username: req.body.username});
@@ -86,7 +103,22 @@ login = async (req, res) => {
     }
 };
 
+// router.get('/user/:username', c.authToken, c.private, c.userdetails); 
+userdetials = async (req, res) => {
+    if (req.method === 'GET'){
+        var user = await User.findOne({username: req.params.username});
+        if(!user) {
+            return res.json({ message: 'User Not Found'}).status(400); 
+        }
+        return res.json(user).status(200);
+    }
+}
+
+
 // WORKING
+// Get('/allevents', c.allevents)
+// Post('/addevent', c.authToken, c.onlyAdmin, c.allevents)
+// Put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents)
 allevents = async (req, res) => {
     if(req.method === 'GET'){
         try {
@@ -138,6 +170,7 @@ allevents = async (req, res) => {
 };
 
 // WORKING
+// Post('/:username/:event', c.authToken, c.checkUserParams, c.register)
 register = async (req, res) => {
     if (req.method === 'POST') {
         try {
@@ -168,6 +201,7 @@ register = async (req, res) => {
 }
 
 // WORKING 
+// Get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played)
 played = async (req, res) => {
     if(req.method === 'GET'){
         try {
@@ -180,6 +214,7 @@ played = async (req, res) => {
 }
 
 // WORKING 
+// Get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present)
 present = async (req, res) => {
     if(req.method === 'GET'){
         try {
@@ -192,6 +227,7 @@ present = async (req, res) => {
 }
 
 // WORKING 
+// Post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin)
 eventlogin = async (req, res) => {
     if (req.method==='POST')  {
         var user;
@@ -217,6 +253,8 @@ eventlogin = async (req, res) => {
 }
 
 // WORKING
+// Get('/updates', c.updates)
+// Post('/addupdate', c.authToken, c.onlyAdmin, c.updates)
 updates = async (req, res) => {
     if (req.method == 'GET') {
         var updates = await Update.find();
@@ -224,15 +262,17 @@ updates = async (req, res) => {
     } 
     else if (req.method == 'POST') {
         const update = new Update({
+            event: req.body.event,
             headline: req.body.headline,
             info: req.body.info
-        }); 
+        });
         var waitedupdate = await update.save(); 
         res.json(waitedupdate).status(200); 
     }
 }
 
 // WORKING
+// Put('/:username/update', c.authToken, c.private, c.updateuser)
 updateuser = async (req, res) => {
     if (req.method==='PUT') {
         const hashedpassword = await bcrypt.hash(req.body.password, 10);
@@ -257,6 +297,7 @@ updateuser = async (req, res) => {
 }
 
 // WORKING
+// Get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers)
 eventusers = async (req, res) => {
     if (req.method==='GET'){
         try {
@@ -267,6 +308,38 @@ eventusers = async (req, res) => {
         }
     }
 }
+
+// teamlogic = async (req, res) => {
+//     if (req.method === 'GET') {
+//         team = await Teams.find({team_username: req.params.team});
+//         if (!team) return res.json({message: "Team not found"});
+//         return res.json(team).status(200); 
+//     } 
+    
+//     else if (req.method === 'POST') {
+//         user = await User.find({username: req.body.username})
+//         team = await Teams.find({team_username: req.body.team});
+
+//         if (!team) {
+//             const team = new Teams({
+//                 team_username: req.body.team_username,
+//                 no_of_players: req.body.no_of_players,
+//                 players: req.body.players,
+//                 count: 0,
+//                 logedin_players: [],
+//                 event_name: req.body.event_name,
+//             });
+
+//             console.log(team); 
+//             await team.save(); 
+
+//             return res.json(team).status(200);
+//         } 
+        
+//         else
+//             return res.json({message: "Team Already exists"}).status(401); 
+//     }
+// }
 
 // RAZORPAY FUNCTIONS 
 // WORKING
@@ -308,9 +381,6 @@ payment = async (req, res) => {
         console.log("ERROR (PAYMENT) : ", error); 
     }
 }
-
-
-
 
 // MIDDLE WARES //
 // WORKING
@@ -370,8 +440,8 @@ checkUserParams = async (req, res, next) => {
 }
 
 module.exports = {
-    allusers, allevents, allregs, login, signup, register, played, present, eventlogin, eventusers, updateuser, updates, payment, verification,
-    // payment, verification, 
+    allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
+    eventusers, updateuser, updates, payment, verification, userdetials,
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };

@@ -23,7 +23,7 @@ const event_schema = mongoose.Schema({
     event_username: { type: String, require: true, lowercase: true, unique: true},
     event_name: { type: String, require: true},
     event_des: { type: String, require: true },
-    event_time: { type: Date, require: true }, 
+    event_time: { type: Date, require: true },
     event_price: {type: Number, require: true}
 }); 
 
@@ -39,6 +39,7 @@ const register_schema = mongoose.Schema({
 }); 
 
 const update_schema = mongoose.Schema({
+    event: {type: String, require: true}, 
     headline: {type: String, require: true},
     info: {type: String, require: true}
 })
