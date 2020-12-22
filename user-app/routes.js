@@ -7,6 +7,7 @@ router.get('/allevents', c.allevents);
 router.get('/updates', c.updates);
 router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played);
 router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);
+router.get('/:username/reg', c.checkUserParams, c.authToken, c.allowAdmin, c.RegOne);
 
 // POST REQUEST
 router.post('/signup', c.signup);
