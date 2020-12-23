@@ -5,6 +5,7 @@ const c = require('./controller');
 // GET REQUEST
 router.get('/allevents', c.allevents);
 router.get('/updates', c.updates);
+router.get('/user/:username', c.authToken, c.private, c.userdetials); 
 router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played);
 router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);
 router.get('/:username/reg', c.checkUserParams, c.authToken, c.allowAdmin, c.RegOne);
@@ -20,9 +21,10 @@ router.post('/verification', c.verification);
 router.put('/:username/update', c.authToken, c.private, c.updateuser); 
 
 // ADMIN
+router.get('/allteams', c.authToken, c.onlyAdmin, c.allteams);
 router.get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);
-router.get('/:event', c.authToken, c.onlyAdmin, c.eventusers); 
+router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers); 
 router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);
 router.post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin);
 router.post('/addevent', c.authToken, c.onlyAdmin, c.allevents);
