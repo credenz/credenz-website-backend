@@ -13,15 +13,16 @@ router.get('/:username/reg', c.checkUserParams, c.authToken, c.allowAdmin, c.Reg
 // POST REQUEST
 router.post('/signup', c.signup);
 router.post('/login', c.login);
-router.post('/:username/:event', c.authToken, c.checkUserParams, c.register);
+router.post('/:username/:event', c.authToken, c.checkUserParams, c.private, c.register);
 router.post('/razorpay', c.payment); 
 router.post('/verification', c.verification);
+router.post('/addteam', c.authToken, c.createteams);
 
 // PUT REQUEST
 router.put('/:username/update', c.authToken, c.private, c.updateuser); 
 
 // ADMIN
-router.get('/allteams', c.authToken, c.onlyAdmin, c.allteams);
+router.get('/allteams', c.authToken, c.onlyAdmin, c.createteams);
 router.get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);
 router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers); 

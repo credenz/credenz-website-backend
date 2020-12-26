@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const user_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     username: { type: String, require: true, unique: true, lowercase: true },
     password: { type: String, require: true },
     email: { type: String, require: true, unique: true, lowercase: true },
@@ -11,6 +12,7 @@ const user_schema = mongoose.Schema({
 }); 
 
 const teams_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     team_username: {type: String, require: true, unique: true, lowercase: true},
     no_of_players: {type: Number, require: true},
     players: [{type: String, unique:true, lowercase:true}],
@@ -20,6 +22,7 @@ const teams_schema = mongoose.Schema({
 })
 
 const event_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     event_username: { type: String, require: true, lowercase: true, unique: true},
     event_name: { type: String, require: true},
     event_des: { type: String, require: true },
@@ -28,6 +31,7 @@ const event_schema = mongoose.Schema({
 }); 
 
 const register_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     event_username: {type: String, require: true, lowercase: true},
     username: {type: String, require: true}, 
     price: {type: Number, require: true},
@@ -39,6 +43,7 @@ const register_schema = mongoose.Schema({
 }); 
 
 const update_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     event: {type: String, require: true}, 
     headline: {type: String, require: true},
     info: {type: String, require: true}
