@@ -2,33 +2,33 @@ const express = require('express');
 const router = express.Router();
 const c = require('./controller');
 
-// GET REQUEST
-router.get('/allevents', c.allevents);
-router.get('/updates', c.updates);
-router.get('/user/:username', c.authToken, c.private, c.userdetials); 
-router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played);
-router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);
+// <--------------------- GET REQUEST ------------------------>
+router.get('/allevents', c.allevents);                                                      // all events
+router.get('/updates', c.updates);                                                          // all updates
+router.get('/user/:username', c.authToken, c.private, c.userdetials);                       // user details
+router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played);    // total played event by the user
+router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);  // total present events by the user
 
-// POST REQUEST
-router.post('/signup', c.signup);
-router.post('/login', c.login);
-router.post('/:username/:event', c.authToken, c.checkUserParams, c.private, c.register);
-router.post('/razorpay', c.payment); 
-router.post('/verification', c.verification);
-router.post('/addteam', c.authToken, c.createteams);
+// <--------------------- POST REQUEST ------------------------>
+router.post('/signup', c.signup);                                                          // Signup
+router.post('/login', c.login);                                                            // Login
+router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
+router.post('/razorpay', c.payment);                                                       // Razorpay API
+router.post('/verification', c.verification);                                              // Verification
+router.post('/addteam', c.authToken, c.createteams);                                       // add Teams
 
-// PUT REQUEST
-router.put('/:username/update', c.authToken, c.private, c.updateuser); 
+// <--------------------- PUT REQUEST ------------------------>
+router.put('/:username/update', c.authToken, c.private, c.updateuser);  // Update User details
 
-// ADMIN
-router.get('/allteams', c.authToken, c.onlyAdmin, c.createteams);
-router.get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
-router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);
-router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers); 
-router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);
-router.post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin);
-router.post('/addevent', c.authToken, c.onlyAdmin, c.allevents);
-router.put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents);
+// <--------------------- ADMIN ------------------------>
+router.get('/allteams', c.authToken, c.onlyAdmin, c.createteams);       // All teams
+router.get('/allusers', c.authToken, c.onlyAdmin, c.allusers);          // All Users
+router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);            // All registrations
+router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers);    // All registrations of the event
+router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);         // Adding Update
+router.post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin);     // Login From the main Event
+router.post('/addevent', c.authToken, c.onlyAdmin, c.allevents);        // Add any event
+router.put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents);      // Edit particular Event
 
 module.exports = router;
 // MIDDLE WARES 
