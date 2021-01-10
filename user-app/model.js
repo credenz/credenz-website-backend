@@ -13,11 +13,11 @@ const user_schema = mongoose.Schema({
 
 const teams_schema = mongoose.Schema({
     _id: {type: Number, require: true, unique: true},
-    team_username: {type: String, require: true, unique: true, lowercase: true},
+    team_username: {type: String, require: true, lowercase: true},
     no_of_players: {type: Number, require: true},
-    players: [{type: String, unique:true, lowercase:true}],
+    players: [{type: String, lowercase:true}],
     count: {type: Number},
-    logedin_players: [{type: String, unique: true, lowercase:true}],
+    logedin_players: [{type: String, lowercase:true}],
     event_name: {type: String}
 })
 
@@ -31,7 +31,6 @@ const event_schema = mongoose.Schema({
 }); 
 
 const register_schema = mongoose.Schema({
-    _id: {type: Number, require: true, unique: true},
     event_username: {type: String, require: true, lowercase: true},
     username: {type: String, require: true}, 
     price: {type: Number, require: true},

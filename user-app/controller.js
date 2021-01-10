@@ -10,7 +10,6 @@ const ROLE = {
     ADMIN: 'admin'
 };
 
-// 
 // Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 allusers = async (req, res) => {
     if(req.method === 'GET'){
@@ -18,12 +17,11 @@ allusers = async (req, res) => {
             const users = await User.find()
             res.status(200).json(users);
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     }
 }
 
-// 
 // Get ('/allregs', c.authToken, c.onlyAdmin, c.allregs)
 allregs = async (req, res) => {
     if(req.method === 'GET'){
@@ -31,12 +29,11 @@ allregs = async (req, res) => {
             const regs = await Register.find()
             res.status(200).json(regs);
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     }
 }
 
-// 
 // Get('/allteams', c.authToken, c.onlyAdmin, c.allteams)
 allteams = async (req, res) => {
     if(req.method === 'GET'){
@@ -44,18 +41,17 @@ allteams = async (req, res) => {
             const teams = await Teams.find()
             res.status(200).json(teams);
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     }
 }
 
-// FINAL WORKING
 // Post('/signup', c.signup)
 signup = async (req, res) => {
     if (req.method === 'POST') {
         try {
             const user = await User.findOne({username: req.body.username});  
-            if(user != null) return res.status(404).json({message: 'username Already Taken'});
+            if(user != null) res.status(404).json({message: 'username Already Taken'});
 
             const new_user = new User({
                 _id: await User.count() + 1,
@@ -78,14 +74,13 @@ signup = async (req, res) => {
     }
 };
 
-// FINAL WORKING
 // Post('/login', c.login)
 login = async (req, res) => {
     if (req.method === 'POST') {
         var user = await User.findOne({username: req.body.username});
         if(!user) {
             user = await User.findOne({email: req.body.username}); 
-            if (!user) return res.json({ message: 'User Not Found'}).status(400); 
+            if (!user) res.json({ message: 'User Not Found'}).status(400); 
         }
 
         try {
@@ -101,28 +96,27 @@ login = async (req, res) => {
     }
 };
 
-// FINAL WORKING
 // Get('/user/:username', c.authToken, c.private, c.userdetails); 
 userdetials = async (req, res) => {
     if (req.method === 'GET'){
         var user = await User.findOne({username: req.params.username});
         if(!user) {
-            return res.json({ message: 'User Not Found'}).status(400); 
+            res.json({ message: 'User Not Found'}).status(400); 
         }
-        return res.json(user).status(200);
+        res.json(user).status(200);
     }
 }
 
-// Get('/allevents', c.allevents) -- FINAL WORKING
-// Post('/addevent', c.authToken, c.onlyAdmin, c.allevents) -- FINAL WORKING
-// Put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents) -- FINAL WORKING
+// Get('/allevents', c.allevents)
+// Post('/addevent', c.authToken, c.onlyAdmin, c.allevents)
+// Put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents)
 allevents = async (req, res) => {
     if(req.method === 'GET'){
         try {
             const events = await Event.find()
             res.status(200).json(events);
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     } 
 
@@ -144,9 +138,9 @@ allevents = async (req, res) => {
             });
             
             const waitedevent = await event.save();
-            return res.json(waitedevent).status(201);
+            res.json(waitedevent).status(201);
         } catch (err) {
-            return res.status(400).json({ message: `post internal error: ${err}` });
+            res.status(400).json({ message: `post internal error: ${err}` });
         }
     } 
 
@@ -164,48 +158,46 @@ allevents = async (req, res) => {
             oneevent.event_price = req.body.event_price; 
             oneevent.event_des = req.body.event_des; 
             await oneevent.save(); 
-            console.log(oneevent); 
 
-            return res.json(oneevent).status(200); 
+            res.json(oneevent).status(200); 
         } catch (err) {
-            return res.json({message: `Internsal Error: ${err}`}).status(500)
+            res.json({message: `Internsal Error: ${err}`}).status(500)
         }
     }
 };
 
-// FINAL WORKING
+async function registerforevent (event_username, username, price) {
+    var pass = ''; 
+    var str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +  
+            'abcdefghijklmnopqrstuvwxyz0123456789@#$'; 
+    for (i = 1; i <= 8; i++) { 
+        var char = Math.floor(Math.random() * str.length + 1); 
+        pass += str.charAt(char) 
+    } 
+    const reg = new Register({
+        event_username: event_username,
+        username: username, 
+        price: price,
+        random_pw: pass,
+        played: false
+    });
+
+    const waitedreg = await reg.save();
+    return waitedreg;
+}
+
 // Post('/:username/:event', c.authToken, c.checkUserParams, c.register)
 register = async (req, res) => {
     if (req.method === 'POST') {
         try {
-            var pass = ''; 
-            var str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +  
-                    'abcdefghijklmnopqrstuvwxyz0123456789@#$'; 
-            for (i = 1; i <= 8; i++) { 
-                var char = Math.floor(Math.random() * str.length + 1); 
-                pass += str.charAt(char) 
-            } 
-            const eventreg = await Register.findOne({username: req.params.username, event_username: req.params.event, played: false});
-            if (eventreg == null) {
-                const reg = new Register({
-                    _id: await Register.count() + 1,
-                    event_username: req.params.event,
-                    username: req.params.username, 
-                    price: req.params_event.event_price,
-                    random_pw: pass,
-                    played: false
-                });
-                const waitedreg = await reg.save();
-                res.json(waitedreg).status(201);
-            } 
-            res.json({message: "Event Already Registered!"})
+            var registrations = await registerforevent(req.params.event, req.params.username, req.params_event.event_price);
+            res.status(201).json(registrations);
         } catch (err) {
-            res.status(400).json({ message: `Post Internal Error: ${err}` });
+            res.status(500).json({ message: `Post Internal Error: ${err}` });
         }
     }
 }
 
-// WORKING
 // Get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played)
 played = async (req, res) => {
     if(req.method === 'GET'){
@@ -213,12 +205,11 @@ played = async (req, res) => {
             const registrations = await Register.find({username: req.params.username, played: true});
             res.status(200).json(registrations); 
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     }
 }
 
-// WORKING
 // Get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present)
 present = async (req, res) => {
     if(req.method === 'GET'){
@@ -226,12 +217,11 @@ present = async (req, res) => {
             const registrations = await Register.find({username: req.params.username, played: false});
             res.status(200).json(registrations); 
         } catch (err) {
-            res.status(500).json({message: err.message});
+            res.status(500).json({message: `Internal server error : ${err.message}`});
         }
     }
 }
 
-// WORKING 
 // Post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin)
 eventlogin = async (req, res) => {
     if (req.method==='POST')  {
@@ -239,7 +229,7 @@ eventlogin = async (req, res) => {
         user = await User.findOne({username: req.body.username}); 
         if(!user) {
             user = await User.findOne({email: req.body.email});
-            if (!user) return res.json({ allow: false, message: 'User Not Found'}).status(400);
+            if (!user) res.json({ allow: false, message: 'User Not Found'}).status(400);
         }
         
         try {
@@ -257,13 +247,12 @@ eventlogin = async (req, res) => {
     }
 }
 
-// 
 // Get('/updates', c.updates)
 // Post('/addupdate', c.authToken, c.onlyAdmin, c.updates)
 updates = async (req, res) => {
     if (req.method == 'GET') {
         var updates = await Update.find();
-        return res.json(updates).status(200);
+        res.json(updates).status(200);
     } 
     else if (req.method == 'POST') {
         const update = new Update({
@@ -277,7 +266,6 @@ updates = async (req, res) => {
     }
 }
 
-// 
 // Put('/:username/update', c.authToken, c.private, c.updateuser)
 updateuser = async (req, res) => {
     if (req.method==='PUT') {
@@ -288,40 +276,35 @@ updateuser = async (req, res) => {
             user.phoneno = req.body.phoneno;
             user.clgname = req.body.clgname;
             user.name = req.body.name;
-            await user.save();
-
-            // for await
-            console.log(req.user);
-            console.log(user);
             
-            return res.json(user).status(200);     
+            await user.save();
+            res.json(user).status(200);     
         } catch (err) {
-            return res.json({message: `Internal Error ${err}`}).status(500); 
+            res.json({message: `Internal Error ${err}`}).status(500); 
         }
     }
 }
 
-// 
 // Get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers)
 eventusers = async (req, res) => {
     if (req.method==='GET'){
         try {
             eventreg = await Register.find({event_username: req.params.event});
-            return res.json(eventreg).status(200);    
+            res.json(eventreg).status(200);    
         } catch (err) {
-            return res.json(`Internal Server Error: ${err}`).status(500);
+            res.json(`Internal Server Error: ${err}`).status(500);
         }
     }
 }
 
-// Get('/allteams', c.authToken, c.onlyAdmin, c.teamlogic) - FINAL WORKING
-// Post('/addteam', c.authToken, c.private, c.teamlogic) - FINAL WORKING
+// Get('/allteams', c.authToken, c.onlyAdmin, c.teamlogic)
+// Post('/addteam', c.authToken, c.private, c.teamlogic)
 createteams = async (req, res) => {
     if (req.method === 'GET') {
         team = await Teams.find();
-        return res.json(team).status(200);
+        res.json(team).status(200);
     } 
-    
+
     else if (req.method === 'POST') {
         // list of other members of the teams
         var players = req.body.players;
@@ -331,49 +314,77 @@ createteams = async (req, res) => {
 
         players.push(req.user.username);
 
-        try {
-            const team = new Teams({
+        try{
+            var event = await Event.findOne({event_username: req.body.event_name});
+        } catch(err) {
+            res.json({message: "Event not found"}).status(400); 
+        }
+
+        // check for repeated users
+        for (var i=0; i<players.length; i++) {
+            for(var j=0; j<players.length; j++){
+                if (i!=j && players[i] == players[j]){
+                    console.log("YES, CHECK 1");
+                    res.json({message: "Username Repeated"}).status(400); 
+                }
+            }
+        }
+
+        var checkpromises = new Promise(async (resolve, reject) => {
+            try {
+                // Team username check
+                var checkteam = await Teams.findOne({team_username: team_username, event_name: event_name});
+                console.log("YES, CHECK 2");
+                if (checkteam) throw "Team username already registered!";
+
+                // check if username exists or not
+                players.forEach(async (element) => {
+                    user = await User.findOne({username: element});
+                    console.log("YES, CHECK 3");
+                    if(!user) throw "One of the user not found";
+                });
+                console.log("-----------------");
+                resolve("success");
+            } catch (err) {
+                reject(err);
+            }
+        });
+
+        checkpromises.then(async (message) => {
+            var team = new Teams({
                 _id: await Teams.count() + 1,
                 team_username: team_username,
+                event_name: event_name,
                 no_of_players: no_of_players,
                 players: players,
                 count: 0,
-                logedin_players: [],
-                event_name: event_name,
+                logedin_players: [null]
             });
-            console.log(team); 
-    
-            req.body.players.forEach(async (element) => {
-                user = await User.find({username: element});
-                if(!user) return res.json({message: "One of the user not found"}).status(400);
-            });
-    
-            await team.save(); 
-            return res.json(team).status(200);    
-        }
+            await team.save();  
 
-        catch(err) {
-            return res.json({message: "Internal server Error"}).status(500); 
-        }
+            // register for all members
+            players.forEach(async (element) => {       
+                console.log("YES, FUNCTION CALL!");
+                await registerforevent(event_name, element, event.event_price);
+            });
+            res.json(team).status(200);    
+        }).catch((err) => {
+            res.json({message: err}).status(400);
+        });
     }
 }
 
 // RAZORPAY FUNCTIONS 
-// 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY,
     key_secret: process.env.RAZORPAY_SECRET
 });
 
 verification = async (req, res) => {
-    // verification logic 
     //const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-    // Still remaining
-    console.log("VERIFICATION: ", req.body);
-    res.json({ status: 'ok'});
+    res.json({ status: 'ok'}).status(200);
 }
 
-// 
 payment = async (req, res) => {
     const payment_capture = 1;
     const amount = 499;
@@ -388,36 +399,35 @@ payment = async (req, res) => {
 
     try {
         const response = await razorpay.orders.create(options);
-        console.log("PAYMENT: ", response);
         res.json({
             id: response.id, 
             currency: response.currency,
             amount: response.amount
-        }); 
+        }).status(200); 
     } catch (error) {
-        console.log("ERROR (PAYMENT) : ", error); 
+        res.json({message: `INTERNAL SERVER ERROR (PAYMENT) : ${err}`}).status(500);
     }
 }
 
-// MIDDLE WARES //
-// 
+// <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
     const authHeader = req.headers['authorization']
     // Bearer TOKEN
     const token = authHeader && authHeader.split(' ')[1]
-    if(token == null) return res.status(401).json({message: 'Invaild Token'});
+    if(token == null) res.status(401).json({message: 'Invaild Token'});
     
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async(err, user) => {
         if (err) {
             res.status(400).json({message: err.message});
-            // if (req.method === 'GET') return res.redirect(301, '/login');
-            // else if (req.method === 'POST') return res.redirect(307, '/login');
+            // if (req.method === 'GET') res.redirect(301, '/login');
+            // else if (req.method === 'POST') res.redirect(307, '/login');
         }
         req.user = user;
         next();
     });
 }
 
+// Only Owner can access the API
 private = (req, res, next) => {
     if (req.user.username !== req.params.username) {    
         res.json({ message: 'You can only view your Data'}).status(400);
@@ -425,14 +435,16 @@ private = (req, res, next) => {
     next();
 }
 
+// Owner and Admin Can access the API
 allowAdmin = (req, res, next) => {
     if(req.params.username === req.user.username || req.user.role === ROLE.ADMIN){
         next();
         return;
     }
-    return res.status(403).json({ message: 'Accessed not allowed!'});
+    res.status(403).json({ message: 'Accessed not allowed!'});
 }
 
+// Only admins are allowed to access user
 onlyAdmin= (req, res, next) => {
     if(req.user.role != ROLE.ADMIN){
         res.status(403).json({ message: 'Accessed not allowed!'});
@@ -440,16 +452,18 @@ onlyAdmin= (req, res, next) => {
     next();
 }
 
+// Check if params Username and event exists or not
 checkUserParams = async (req, res, next) => {
     try {
         const user = await User.findOne({username: req.params.username});
-        if (user === null) return res.status(400).json({message: `User doesn't exist`});
+        if (user === null) res.status(400).json({message: `User doesn't exist`});
         
         var event; 
-        if (req.params.event != null)
+        if (req.params.event != null) {
             event = await Event.findOne({event_username: req.params.event});
-        if (event === null) return res.return(400).json({message: `Event doesn't exist!`}); 
-        req.params_event = event; 
+            if (event === null) res.status(400).json({message: `Event doesn't exist!`}); 
+            req.params_event = event; 
+        }
     } catch (err) {
         res.status(500).json({message: `Internal error ${err}`});
     }
