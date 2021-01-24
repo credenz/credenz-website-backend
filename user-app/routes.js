@@ -13,8 +13,6 @@ router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c
 router.post('/signup', c.signup);                                                          // Signup
 router.post('/login', c.login);                                                            // Login
 router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
-router.post('/razorpay', c.payment);                                                       // Razorpay API
-router.post('/verification', c.verification);                                              // Verification
 router.post('/addteam', c.authToken, c.createteams);                                       // add Teams
 
 // <--------------------- PUT REQUEST ------------------------>

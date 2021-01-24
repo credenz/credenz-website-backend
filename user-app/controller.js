@@ -2,8 +2,8 @@ require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
 const { User, Event, Register, Update, Teams } = require('./model');
-const Razorpay = require('razorpay')
-const shortid = require('shortid')
+const paytm = require('paytm-pg-node-sdk');
+const paytmchecksum = require('paytmchecksum');
 
 const ROLE = {
     BASIC: 'basic',
@@ -374,40 +374,7 @@ createteams = async (req, res) => {
     }
 }
 
-// RAZORPAY FUNCTIONS 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY,
-    key_secret: process.env.RAZORPAY_SECRET
-});
 
-verification = async (req, res) => {
-    //const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-    res.json({ status: 'ok'}).status(200);
-}
-
-payment = async (req, res) => {
-    const payment_capture = 1;
-    const amount = 499;
-    const currency = 'INR'
-
-    const options = {
-        amount: amount*100, 
-        currency, 
-        receipt: shortid.generate(), 
-        payment_capture
-    }
-
-    try {
-        const response = await razorpay.orders.create(options);
-        res.json({
-            id: response.id, 
-            currency: response.currency,
-            amount: response.amount
-        }).status(200); 
-    } catch (error) {
-        res.json({message: `INTERNAL SERVER ERROR (PAYMENT) : ${err}`}).status(500);
-    }
-}
 
 // <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
@@ -472,7 +439,7 @@ checkUserParams = async (req, res, next) => {
 
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
-    eventusers, updateuser, updates, payment, verification, userdetials, createteams,
+    eventusers, updateuser, updates, userdetials, createteams,
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };

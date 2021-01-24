@@ -38,7 +38,6 @@ const register_schema = mongoose.Schema({
     played: {type: Boolean, require:true, default: false}, 
     gain_score: {type: Number, require:true, default: null},
     outof_score: {type: Number, require:true, default: null}
-    // trans_id: {type: String, require: true},
 }); 
 
 const update_schema = mongoose.Schema({
