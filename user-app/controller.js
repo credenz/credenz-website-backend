@@ -299,7 +299,7 @@ updates = async (req, res) => {
 
 leaderboard = async (req, res) => {
     if(req.method == 'GET') {
-        var scores = await Leaderboard.find()
+        var scores = await Leaderboard.find().sort({score: -1})
         res.json(scores).status(200);
     }
     else if (req.method == 'POST') {
