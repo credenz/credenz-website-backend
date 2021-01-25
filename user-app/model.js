@@ -40,6 +40,13 @@ const register_schema = mongoose.Schema({
     outof_score: {type: Number, require:true, default: null}
 }); 
 
+const leaderboard_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
+    username: {type: String, require: true}, 
+    college: {type: String, require: true},
+    score: {type: Number, require:true, default: null},
+})
+
 const update_schema = mongoose.Schema({
     _id: {type: Number, require: true, unique: true},
     event: {type: String, require: true}, 
@@ -52,11 +59,14 @@ Event = mongoose.model('Event', event_schema, 'events');
 Register = mongoose.model('Register', register_schema, 'register');
 Update = mongoose.model('Update', update_schema, 'updates');
 Teams = mongoose.model('Teams', teams_schema, 'teams');
+Leaderboard = mongoose.model('Leaderboard', leaderboard_schema, 'leaderboard');
+
 
 module.exports = {
     User, 
     Event,
     Register, 
     Update,
-    Teams
+    Teams,
+    Leaderboard
 }
