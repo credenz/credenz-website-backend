@@ -11,33 +11,33 @@ const ROLE = {
     ADMIN: 'admin'
 };
 
-getCode = async (req, res) => {
-    client
-        .verify
-        .services(process.env.VERIFY_SERVICE_SID)
-        .verifications
-        .create({
-            to: `+${req.query.phonenumber}`,
-            channel: req.query.channel
-        })
-        .then(data => {
-            res.status(200).send(data);
-        })
-};
+// getCode = async (req, res) => {
+//     client
+//         .verify
+//         .services(process.env.VERIFY_SERVICE_SID)
+//         .verifications
+//         .create({
+//             to: `+${req.query.phonenumber}`,
+//             channel: req.query.channel
+//         })
+//         .then(data => {
+//             res.status(200).send(data);
+//         })
+// };
 
-verifyCode = async (req, res) => {
-    client
-        .verify
-        .services(process.env.VERIFY_SERVICE_SID)
-        .verificationChecks
-        .create({
-            to: `+${req.query.phonenumber}`,
-            code: req.query.code
-        })
-        .then(data => {
-            res.status(200).send(data);
-        });
-};
+// verifyCode = async (req, res) => {
+//     client
+//         .verify
+//         .services(process.env.VERIFY_SERVICE_SID)
+//         .verificationChecks
+//         .create({
+//             to: `+${req.query.phonenumber}`,
+//             code: req.query.code
+//         })
+//         .then(data => {
+//             res.status(200).send(data);
+//         });
+// };
 
 // Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 allusers = async (req, res) => {
