@@ -1,13 +1,42 @@
 require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
-const { User, Event, Register, Update, Teams } = require('./model');
-const Razorpay = require('razorpay')
-const shortid = require('shortid')
+const { User, Event, Register, Update, Teams, Leaderboard } = require('./model');
+var nodemailer = require('nodemailer');
+
+// const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
 
 const ROLE = {
     BASIC: 'basic',
     ADMIN: 'admin'
+};
+
+getCode = async (req, res) => {
+    client
+        .verify
+        .services(process.env.VERIFY_SERVICE_SID)
+        .verifications
+        .create({
+            to: `+${req.query.phonenumber}`,
+            channel: req.query.channel
+        })
+        .then(data => {
+            res.status(200).send(data);
+        })
+};
+
+verifyCode = async (req, res) => {
+    client
+        .verify
+        .services(process.env.VERIFY_SERVICE_SID)
+        .verificationChecks
+        .create({
+            to: `+${req.query.phonenumber}`,
+            code: req.query.code
+        })
+        .then(data => {
+            res.status(200).send(data);
+        });
 };
 
 // Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
@@ -266,6 +295,72 @@ updates = async (req, res) => {
     }
 }
 
+leaderboard = async (req, res) => {
+    if(req.method == 'GET') {
+        var scores = await Leaderboard.find()
+        res.json(scores).status(200);
+    }
+    else if (req.method == 'POST') {
+
+        var user;
+        user = await User.findOne({username: req.body.username});
+
+        if(user) {
+
+            const score = new Leaderboard({
+                _id: await Leaderboard.count() + 1,
+               username: req.body.username,
+               college: req.body.college,
+               score: req.body.score
+           })
+
+           var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+
+
+            /*            
+            var scores = await Leaderboard.findOne({username: req.body.username});
+            console.log(user)
+            
+
+            var score = ''
+
+            if(scores) {
+                console.log(scores)
+                console.log(scores.id)
+                console.log("If")
+                score = new Leaderboard({
+                    _id: scores.id,
+                   username: req.body.username,
+                   college: req.body.college,
+                   score: req.body.score + scores.score
+               })
+
+               var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+
+            }else {
+                console.log("else")
+                score = new Leaderboard({
+                    _id: await Leaderboard.count() + 1,
+                   username: req.body.username,
+                   college: req.body.college,
+                   score: req.body.score + scores.score
+               })
+
+               var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+
+            }
+*/
+        }else {
+            res.json("User doesnt exist").status(400);
+        }
+        
+        
+    }
+}
+
 // Put('/:username/update', c.authToken, c.private, c.updateuser)
 updateuser = async (req, res) => {
     if (req.method==='PUT') {
@@ -374,40 +469,7 @@ createteams = async (req, res) => {
     }
 }
 
-// RAZORPAY FUNCTIONS 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY,
-    key_secret: process.env.RAZORPAY_SECRET
-});
 
-verification = async (req, res) => {
-    //const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-    res.json({ status: 'ok'}).status(200);
-}
-
-payment = async (req, res) => {
-    const payment_capture = 1;
-    const amount = 499;
-    const currency = 'INR'
-
-    const options = {
-        amount: amount*100, 
-        currency, 
-        receipt: shortid.generate(), 
-        payment_capture
-    }
-
-    try {
-        const response = await razorpay.orders.create(options);
-        res.json({
-            id: response.id, 
-            currency: response.currency,
-            amount: response.amount
-        }).status(200); 
-    } catch (error) {
-        res.json({message: `INTERNAL SERVER ERROR (PAYMENT) : ${err}`}).status(500);
-    }
-}
 
 // <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
@@ -470,9 +532,56 @@ checkUserParams = async (req, res, next) => {
     next();
 }
 
+
+resetPassword = async (req, res) => {
+
+    try{
+            
+        var user = await User.findOne({username: req.body.username});
+        
+        if(user) {
+            var emailVal = user.email;
+            console.log("emailVal" + emailVal)
+
+                var smtpTransport = nodemailer.createTransport({  
+                    service: 'SendGrid',  
+                    auth: {  
+                    user: 'sakshee1120@gmail.com',  
+                    pass: ''  
+                    }  
+                });  
+
+                const mailOptions = {  
+                    to: emailVal,  
+                    from: 'sakshee1120@gmail.com',  
+                    subject: 'Node.js Password Reset',  
+                    text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +  
+                        'Please click on the following link, or paste this into your browser to complete the process:\n\n' +  
+                        'http://' + req.headers.host + '/reset/' + username + '\n\n' +  
+                        'If you did not request this, please ignore this email and your password will remain unchanged.\n'  
+                };  
+
+                smtpTransport.sendMail(mailOptions, function(err) {                 
+                    console.log("HI:"+emailVal);  
+                    res.json({status : 'success', message : 'An e-mail has been sent to ' + emailVal + ' with further instructions.'});              
+                    done(err, 'done');  
+                });
+        }else {
+            res.json("Invalid user").status(403)
+        }
+    
+    }catch(err){
+        res.json(err).status(400);
+    }
+
+}  
+  
+
+
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
-    eventusers, updateuser, updates, payment, verification, userdetials, createteams,
+    eventusers, updateuser, updates, userdetials, createteams, getCode, verifyCode,
+    resetPassword, leaderboard,
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };

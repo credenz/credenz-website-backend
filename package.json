@@ -11,13 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.0.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.26",
-    "razorpay": "^2.0.6",
-    "shortid": "^2.2.15",
-    "nodemon": "^2.0.4"
+    "nodemailer": "^6.4.17",
+    "twilio": "^3.55.0"
   }
 }
