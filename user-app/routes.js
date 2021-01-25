@@ -7,8 +7,8 @@ const c = require('./controller');
 //router.get('/:username/reg', c.checkUserParams, c.authToken, c.allowAdmin, c.RegOne);
 
 //OTP Verification
-router.get('/getcode', c.getCode);
-router.get('/verifycode', c.verifyCode);
+// router.get('/getcode', c.getCode);
+// router.get('/verifycode', c.verifyCode);
 
 // <--------------------- GET REQUEST ------------------------>
 router.get('/allevents', c.allevents);                                                      // all events

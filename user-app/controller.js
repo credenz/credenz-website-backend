@@ -580,7 +580,7 @@ resetPassword = async (req, res) => {
 
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
-    eventusers, updateuser, updates, userdetials, createteams, getCode, verifyCode,
+    eventusers, updateuser, updates, userdetials, createteams, // getCode, verifyCode,
     resetPassword, leaderboard,
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
