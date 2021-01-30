@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
-const { User, Event, Register, Update, Teams, Leaderboard } = require('./model');
+const { User, Event, Register, Update, Teams, Leaderboard, Sponsors } = require('./model');
 var nodemailer = require('nodemailer');
 
 // const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
@@ -75,6 +75,17 @@ allteams = async (req, res) => {
     }
 }
 
+sponsors = async (req, res) => {
+    if(req.method == 'GET') {
+        try {
+            const sponsors = await Sponsors.find()
+            res.status(200).json(sponsors);    
+        } catch (err) {
+            res.status(500).json({message: `Internal server error : ${err.message}`});
+        }
+    } 
+}
+
 // Post('/signup', c.signup)
 signup = async (req, res) => {
     if (req.method === 'POST') {
@@ -90,6 +101,7 @@ signup = async (req, res) => {
                 email: req.body.email,
                 phoneno: req.body.phoneno,
                 clgname: req.body.clgname,
+                ieee: req.body.ieee,
                 role: ROLE.BASIC
             });
             
@@ -301,12 +313,9 @@ leaderboard = async (req, res) => {
         res.json(scores).status(200);
     }
     else if (req.method == 'POST') {
-
         var user;
         user = await User.findOne({username: req.body.username});
-
         if(user) {
-
             const score = new Leaderboard({
                 _id: await Leaderboard.count() + 1,
                username: req.body.username,
@@ -576,12 +585,10 @@ resetPassword = async (req, res) => {
 
 }  
   
-
-
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
     eventusers, updateuser, updates, userdetials, createteams, // getCode, verifyCode,
-    resetPassword, leaderboard,
+    resetPassword, leaderboard, sponsors, 
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };

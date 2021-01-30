@@ -1,10 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const c = require('./controller');
-//const otp = require('./model');
-
-
-//router.get('/:username/reg', c.checkUserParams, c.authToken, c.allowAdmin, c.RegOne);
 
 //OTP Verification
 // router.get('/getcode', c.getCode);
@@ -18,12 +14,15 @@ router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.
 router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);  // total present events by the user
 router.get('/reset', c.resetPassword);
 router.get('/leaderboard', c.leaderboard);
+router.get('/sponsors', c.sponsors); 
+
 // <--------------------- POST REQUEST ------------------------>
 router.post('/signup', c.signup);                                                          // Signup
 router.post('/login', c.login);                                                            // Login
 router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
 router.post('/addteam', c.authToken, c.createteams);                                       // add Teams
 router.post('/leaderboard', c.leaderboard);
+
 // <--------------------- PUT REQUEST ------------------------>
 router.put('/:username/update', c.authToken, c.private, c.updateuser);  // Update User details
 

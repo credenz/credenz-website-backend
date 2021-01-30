@@ -8,7 +8,8 @@ const user_schema = mongoose.Schema({
     phoneno: { type: Number, require: true },
     clgname: { type: String, require: true },
     name : { type: String, require: true },
-    role: {type: String, require: true}
+    role: {type: String, require: true},
+    ieee: {type: Boolean, require: true}
 }); 
 
 const teams_schema = mongoose.Schema({
@@ -54,13 +55,20 @@ const update_schema = mongoose.Schema({
     info: {type: String, require: true}
 })
 
+const sponsors_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
+    name: {type: String, require: true}, 
+    description: {type: String, require: true},
+    imageurl: {type: String, require:true, default: null}
+})
+
 User = mongoose.model('User', user_schema, 'users');
 Event = mongoose.model('Event', event_schema, 'events');
 Register = mongoose.model('Register', register_schema, 'register');
 Update = mongoose.model('Update', update_schema, 'updates');
 Teams = mongoose.model('Teams', teams_schema, 'teams');
 Leaderboard = mongoose.model('Leaderboard', leaderboard_schema, 'leaderboard');
-
+Sponsors = mongoose.model('Sponsors', sponsors_schema, 'sponsors');
 
 module.exports = {
     User, 
@@ -68,5 +76,6 @@ module.exports = {
     Register, 
     Update,
     Teams,
-    Leaderboard
+    Leaderboard,
+    Sponsors
 }
