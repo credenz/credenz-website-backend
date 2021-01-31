@@ -31,6 +31,8 @@ router.get('/allteams', c.authToken, c.onlyAdmin, c.createteams);       // All t
 router.get('/allusers', c.allusers);                                    // All Users
 router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);            // All registrations
 router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers);    // All registrations of the event
+router.get('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);     // View that registration
+router.post('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);    // Approve Registrations with given ID
 router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);         // Adding Update
 router.post('/eventlogin', c.authToken, c.onlyAdmin, c.eventlogin);     // Login From the main Event
 router.post('/addevent', c.authToken, c.onlyAdmin, c.allevents);        // Add any event

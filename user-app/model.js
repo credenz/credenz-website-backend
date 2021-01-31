@@ -9,7 +9,8 @@ const user_schema = mongoose.Schema({
     clgname: { type: String, require: true },
     name : { type: String, require: true },
     role: {type: String, require: true},
-    ieee: {type: Boolean, require: true}
+    ieee: {type: Boolean, require: true},
+    ieeeid: {type: String, require: true}
 }); 
 
 const teams_schema = mongoose.Schema({
@@ -20,7 +21,7 @@ const teams_schema = mongoose.Schema({
     count: {type: Number},
     logedin_players: [{type: String, lowercase:true}],
     event_name: {type: String}
-})
+}); 
 
 const event_schema = mongoose.Schema({
     _id: {type: Number, require: true, unique: true},
@@ -32,13 +33,16 @@ const event_schema = mongoose.Schema({
 }); 
 
 const register_schema = mongoose.Schema({
+    _id: {type: Number, require: true, unique: true},
     event_username: {type: String, require: true, lowercase: true},
     username: {type: String, require: true}, 
     price: {type: Number, require: true},
     random_pw: {type: String, require: true},
     played: {type: Boolean, require:true, default: false}, 
     gain_score: {type: Number, require:true, default: null},
-    outof_score: {type: Number, require:true, default: null}
+    outof_score: {type: Number, require:true, default: null},
+    approved: {type: Boolean, require: true, default: false},
+    transaction_id: {type: Number, default: null}
 }); 
 
 const leaderboard_schema = mongoose.Schema({
@@ -46,14 +50,14 @@ const leaderboard_schema = mongoose.Schema({
     username: {type: String, require: true}, 
     college: {type: String, require: true},
     score: {type: Number, require:true, default: null},
-})
+}); 
 
 const update_schema = mongoose.Schema({
     _id: {type: Number, require: true, unique: true},
     event: {type: String, require: true}, 
     headline: {type: String, require: true},
     info: {type: String, require: true}
-})
+}); 
 
 const sponsors_schema = mongoose.Schema({
     _id: {type: Number, require: true, unique: true},

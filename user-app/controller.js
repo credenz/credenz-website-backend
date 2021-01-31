@@ -93,6 +93,11 @@ signup = async (req, res) => {
             const user = await User.findOne({username: req.body.username});  
             if(user != null) res.status(404).json({message: 'username Already Taken'});
 
+            var ieeeid = 0; 
+            if (req.body.ieee == true) {
+                ieeeid = req.body.ieeeid
+            }
+
             const new_user = new User({
                 _id: await User.count() + 1,
                 username: req.body.username.toLowerCase(),
@@ -102,7 +107,8 @@ signup = async (req, res) => {
                 phoneno: req.body.phoneno,
                 clgname: req.body.clgname,
                 ieee: req.body.ieee,
-                role: ROLE.BASIC
+                role: ROLE.BASIC,
+                ieeeid: ieeeid
             });
             
             const waiteduser = await new_user.save();
@@ -145,6 +151,26 @@ userdetials = async (req, res) => {
             res.json({ message: 'User Not Found'}).status(400); 
         }
         res.json(user).status(200);
+    }
+}
+
+// router.get('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);   
+// router.post('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);
+allregsid = async (req, res) => {
+    var registration = await Register.findOne({_id: req.params.id});
+
+    if(req.method === 'GET') {
+        if(!registration) {
+            res.json({ message: 'Registration Not Found'}).status(400); 
+        }
+        res.json(registration).status(200)
+    }
+
+    if(req.method === 'POST') {
+        registration.approved = true;
+        registration.save();
+        // Send emails
+        res.json(registration).status(200);
     }
 }
 
@@ -207,7 +233,7 @@ allevents = async (req, res) => {
     }
 };
 
-async function registerforevent (event_username, username, price) {
+async function registerforevent (event_username, username, price, trans_id, approved) {
     var pass = ''; 
     var str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +  
             'abcdefghijklmnopqrstuvwxyz0123456789@#$'; 
@@ -215,12 +241,16 @@ async function registerforevent (event_username, username, price) {
         var char = Math.floor(Math.random() * str.length + 1); 
         pass += str.charAt(char) 
     } 
+
     const reg = new Register({
+        _id: await Register.count() + 1,
         event_username: event_username,
         username: username, 
         price: price,
         random_pw: pass,
-        played: false
+        played: false,
+        approved: approved,
+        transaction_id: trans_id,
     });
 
     const waitedreg = await reg.save();
@@ -231,7 +261,8 @@ async function registerforevent (event_username, username, price) {
 register = async (req, res) => {
     if (req.method === 'POST') {
         try {
-            var registrations = await registerforevent(req.params.event, req.params.username, req.params_event.event_price);
+            var registrations = await registerforevent(req.params.event, req.params.username, 
+                                                        req.params_event.event_price, req.body.trans_id, req.body.approved);
             res.status(201).json(registrations);
         } catch (err) {
             res.status(500).json({ message: `Post Internal Error: ${err}` });
@@ -365,8 +396,6 @@ leaderboard = async (req, res) => {
         }else {
             res.json("User doesnt exist").status(400);
         }
-        
-        
     }
 }
 
@@ -543,11 +572,8 @@ checkUserParams = async (req, res, next) => {
 
 
 resetPassword = async (req, res) => {
-
     try{
-            
         var user = await User.findOne({username: req.body.username});
-        
         if(user) {
             var emailVal = user.email;
             console.log("emailVal" + emailVal)
@@ -569,7 +595,6 @@ resetPassword = async (req, res) => {
                         'http://' + req.headers.host + '/reset/' + username + '\n\n' +  
                         'If you did not request this, please ignore this email and your password will remain unchanged.\n'  
                 };  
-
                 smtpTransport.sendMail(mailOptions, function(err) {                 
                     console.log("HI:"+emailVal);  
                     res.json({status : 'success', message : 'An e-mail has been sent to ' + emailVal + ' with further instructions.'});              
@@ -578,7 +603,6 @@ resetPassword = async (req, res) => {
         }else {
             res.json("Invalid user").status(403)
         }
-    
     }catch(err){
         res.json(err).status(400);
     }
@@ -588,7 +612,7 @@ resetPassword = async (req, res) => {
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
     eventusers, updateuser, updates, userdetials, createteams, // getCode, verifyCode,
-    resetPassword, leaderboard, sponsors, 
+    resetPassword, leaderboard, sponsors, allregsid,
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };
