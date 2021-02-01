@@ -42,7 +42,7 @@ const register_schema = mongoose.Schema({
     gain_score: {type: Number, require:true, default: null},
     outof_score: {type: Number, require:true, default: null},
     approved: {type: Boolean, require: true, default: false},
-    transaction_id: {type: Number, default: null}
+    transaction_id: {type: String, default: null}
 }); 
 
 const leaderboard_schema = mongoose.Schema({
