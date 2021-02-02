@@ -308,7 +308,7 @@ leaderboard = async (req, res) => {
         user = await User.findOne({username: req.body.username});
 
         if(user) {
-
+/*
             const score = new Leaderboard({
                 _id: await Leaderboard.count() + 1,
                username: req.body.username,
@@ -318,9 +318,9 @@ leaderboard = async (req, res) => {
 
            var waitedscore = await score.save();
             res.json(waitedscore).status(200);
+*/
 
-
-            /*            
+            
             var scores = await Leaderboard.findOne({username: req.body.username});
             console.log(user)
             
@@ -347,14 +347,14 @@ leaderboard = async (req, res) => {
                     _id: await Leaderboard.count() + 1,
                    username: req.body.username,
                    college: req.body.college,
-                   score: req.body.score + scores.score
+                   score: req.body.score
                })
 
                var waitedscore = await score.save();
             res.json(waitedscore).status(200);
 
             }
-*/
+
         }else {
             res.json("User doesnt exist").status(400);
         }
@@ -613,8 +613,6 @@ resetPassword = async (req, res) => {
 
 }  
   
-
-
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
     eventusers, updateuser, updates, payment, verification, userdetials, createteams, getCode, verifyCode,
