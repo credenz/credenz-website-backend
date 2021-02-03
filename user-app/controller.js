@@ -1,45 +1,68 @@
 require('dotenv').config();
+const axios = require('axios');
 
 const jwt = require('jsonwebtoken');
-const { User, Event, Register, Update, Teams } = require('./model');
-const Razorpay = require('razorpay')
-const shortid = require('shortid')
+const { User, Event, Register, Update, Teams, Leaderboard, Sponsors } = require('./model');
 var nodemailer = require('nodemailer');
+const { response, request } = require('express');
 
 const ROLE = {
     BASIC: 'basic',
     ADMIN: 'admin'
 };
 
-const client = require('twilio')(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+// mail authentication
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.IEEE_EMAIL,
+        pass: process.env.IEEE_EMAIL_PASSWORD
+    }
+});
 
-getCode = async (req, res) => {
-    client
-        .verify
-        .services(process.env.VERIFY_SERVICE_SID)
-        .verifications
-        .create({
-            to: `+${req.query.phonenumber}`,
-            channel: req.query.channel
-        })
-        .then(data => {
-            res.status(200).send(data);
-        })
-};
+payment = async (req, res) => {
 
-verifyCode = async (req, res) => {
-    client
-        .verify
-        .services(process.env.VERIFY_SERVICE_SID)
-        .verificationChecks
-        .create({
-            to: `+${req.query.phonenumber}`,
-            code: req.query.code
-        })
-        .then(data => {
-            res.status(200).send(data);
-        });
-};
+    if(req.method === 'POST') {
+        try{
+
+            console.log(request.body)
+            
+            axios({
+                method: "post",
+                url: 'https://public_key:secret_key@api.ippopay.com/v1/order/create',
+                body: {
+                    "amount": req.body.amount,
+                    "currency": "INR",
+                    "payment_modes": "cc,dc,nb,upi" ,
+                    "customer": {
+                      "name": req.body.username,
+                      "email": req.body.email,
+                      "phone": {
+                            "country_code": 91 ,
+                            "national_number": req.body.phoneno
+                        }
+                      }
+                },
+                auth: {
+                    username: 'pk_test_PMTwU39TjbUC',
+                    password: 'sk_test_UYkRAbTh1082YnTIIFNy1NMgBUafLbTZ2tzoRhru'
+                  }
+              }).then((response)=>{
+                  //alert(JSON.stringify(response.data))
+                  console.log("API call success " + JSON.stringify(response.data))
+              }).catch((error)=>{
+                  console.log("Error in payment" + error)
+              })
+
+              res.status(200).json(response.data);
+
+        } catch (err) {
+            res.status(500).json({message: `Internal server error : ${err.message}`});
+            console.log("Payement error" + err)
+        }
+    }
+}
+
 
 // Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 allusers = async (req, res) => {
@@ -77,12 +100,29 @@ allteams = async (req, res) => {
     }
 }
 
+// Get('/sponsors', c.sponsors); 
+sponsors = async (req, res) => {
+    if(req.method == 'GET') {
+        try {
+            const sponsors = await Sponsors.find()
+            res.status(200).json(sponsors);    
+        } catch (err) {
+            res.status(500).json({message: `Internal server error : ${err.message}`});
+        }
+    } 
+}
+
 // Post('/signup', c.signup)
 signup = async (req, res) => {
     if (req.method === 'POST') {
         try {
             const user = await User.findOne({username: req.body.username});  
             if(user != null) res.status(404).json({message: 'username Already Taken'});
+
+            var ieeeid = 0; 
+            if (req.body.ieee == true) {
+                ieeeid = req.body.ieeeid
+            }
 
             const new_user = new User({
                 _id: await User.count() + 1,
@@ -92,7 +132,9 @@ signup = async (req, res) => {
                 email: req.body.email,
                 phoneno: req.body.phoneno,
                 clgname: req.body.clgname,
-                role: ROLE.BASIC
+                ieee: req.body.ieee,
+                role: ROLE.BASIC,
+                ieeeid: ieeeid
             });
             
             const waiteduser = await new_user.save();
@@ -135,6 +177,43 @@ userdetials = async (req, res) => {
             res.json({ message: 'User Not Found'}).status(400); 
         }
         res.json(user).status(200);
+    }
+}
+
+// Get('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);   
+// router.post('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);
+allregsid = async (req, res) => {
+    var registration = await Register.findOne({_id: req.params.id});
+    var user = await User.findOne({username: registration.username})
+
+    if(req.method === 'GET') {
+        if(!registration) {
+            res.json({ message: 'Registration Not Found'}).status(400); 
+        }
+        res.json(registration).status(200)
+    }
+
+    if(req.method === 'POST') {
+        registration.approved = true;
+        registration.save();
+
+        // Send emails
+        var mailOptions = {
+            from: process.env.IEEE_EMAIL,
+            to: user.email,
+            subject: 'Sending Email using Node.js',
+            text: "Your Password is " + registration.password
+        };
+
+        transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+                console.log(error);
+            } else {
+                console.log('Email sent: ' + info.response);
+            }
+        });
+
+        res.json(registration).status(200);
     }
 }
 
@@ -197,7 +276,7 @@ allevents = async (req, res) => {
     }
 };
 
-async function registerforevent (event_username, username, price) {
+async function registerforevent (event_username, username, price, trans_id, approved) {
     var pass = ''; 
     var str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' +  
             'abcdefghijklmnopqrstuvwxyz0123456789@#$'; 
@@ -205,12 +284,16 @@ async function registerforevent (event_username, username, price) {
         var char = Math.floor(Math.random() * str.length + 1); 
         pass += str.charAt(char) 
     } 
+
     const reg = new Register({
+        _id: await Register.count() + 1,
         event_username: event_username,
         username: username, 
         price: price,
         random_pw: pass,
-        played: false
+        played: false,
+        approved: approved,
+        transaction_id: trans_id,
     });
 
     const waitedreg = await reg.save();
@@ -221,7 +304,8 @@ async function registerforevent (event_username, username, price) {
 register = async (req, res) => {
     if (req.method === 'POST') {
         try {
-            var registrations = await registerforevent(req.params.event, req.params.username, req.params_event.event_price);
+            var registrations = await registerforevent(req.params.event, req.params.username, 
+                                                        req.params_event.event_price, req.body.trans_id, req.body.approved);
             res.status(201).json(registrations);
         } catch (err) {
             res.status(500).json({ message: `Post Internal Error: ${err}` });
@@ -382,6 +466,17 @@ updateuser = async (req, res) => {
     }
 }
 
+regcount = async (req, res) => {
+    if (req.method==='GET') {
+        try {
+            var count = await Register.find().count();
+            res.json({'count': count});
+        } catch (err) {
+            res.json({message: `Internal Error ${err}`}).status(500); 
+        }
+    }
+}
+
 // Get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers)
 eventusers = async (req, res) => {
     if (req.method==='GET'){
@@ -408,6 +503,8 @@ createteams = async (req, res) => {
         var event_name = req.body.event_name;
         var team_username = req.body.team_username;
         var no_of_players = req.body.no_of_players;
+        var trans_id = req.body.trans_id;
+        var approved = req.body.approved;
 
         players.push(req.user.username);
 
@@ -462,7 +559,7 @@ createteams = async (req, res) => {
             // register for all members
             players.forEach(async (element) => {       
                 console.log("YES, FUNCTION CALL!");
-                await registerforevent(event_name, element, event.event_price);
+                await registerforevent(event_name, element, event.event_price, trans_id, approved);
             });
             res.json(team).status(200);    
         }).catch((err) => {
@@ -471,40 +568,7 @@ createteams = async (req, res) => {
     }
 }
 
-// RAZORPAY FUNCTIONS 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY,
-    key_secret: process.env.RAZORPAY_SECRET
-});
 
-verification = async (req, res) => {
-    //const SECRET = process.env.RAZORPAY_WEBHOOK_SECRET;
-    res.json({ status: 'ok'}).status(200);
-}
-
-payment = async (req, res) => {
-    const payment_capture = 1;
-    const amount = 499;
-    const currency = 'INR'
-
-    const options = {
-        amount: amount*100, 
-        currency, 
-        receipt: shortid.generate(), 
-        payment_capture
-    }
-
-    try {
-        const response = await razorpay.orders.create(options);
-        res.json({
-            id: response.id, 
-            currency: response.currency,
-            amount: response.amount
-        }).status(200); 
-    } catch (error) {
-        res.json({message: `INTERNAL SERVER ERROR (PAYMENT) : ${err}`}).status(500);
-    }
-}
 
 // <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
@@ -615,8 +679,71 @@ resetPassword = async (req, res) => {
   
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
-    eventusers, updateuser, updates, payment, verification, userdetials, createteams, getCode, verifyCode,
-    resetPassword, leaderboard,
+    eventusers, updateuser, updates, userdetials, createteams, sponsors, allregsid, regcount,
+    payment,
+    // resetPassword, leaderboard, 
+
     // MIDDLEWARES
     authToken, private, allowAdmin, onlyAdmin, checkUserParams
 };
+
+// leaderboard = async (req, res) => {
+//     if(req.method == 'GET') {
+//         var scores = await Leaderboard.find()
+//         res.json(scores).status(200);
+//     }
+//     else if (req.method == 'POST') {
+//         var user;
+//         user = await User.findOne({username: req.body.username});
+//         if(user) {
+//             const score = new Leaderboard({
+//                 _id: await Leaderboard.count() + 1,
+//                username: req.body.username,
+//                college: req.body.college,
+//                score: req.body.score
+//            })
+
+//            var waitedscore = await score.save();
+//             res.json(waitedscore).status(200);
+
+
+//             /*            
+//             var scores = await Leaderboard.findOne({username: req.body.username});
+//             console.log(user)
+            
+
+//             var score = ''
+
+//             if(scores) {
+//                 console.log(scores)
+//                 console.log(scores.id)
+//                 console.log("If")
+//                 score = new Leaderboard({
+//                     _id: scores.id,
+//                    username: req.body.username,
+//                    college: req.body.college,
+//                    score: req.body.score + scores.score
+//                })
+
+//                var waitedscore = await score.save();
+//             res.json(waitedscore).status(200);
+
+//             }else {
+//                 console.log("else")
+//                 score = new Leaderboard({
+//                     _id: await Leaderboard.count() + 1,
+//                    username: req.body.username,
+//                    college: req.body.college,
+//                    score: req.body.score + scores.score
+//                })
+
+//                var waitedscore = await score.save();
+//             res.json(waitedscore).status(200);
+
+//             }
+// */
+//         }else {
+//             res.json("User doesnt exist").status(400);
+//         }
+//     }
+// }

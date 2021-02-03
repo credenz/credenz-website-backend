@@ -3,8 +3,6 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
-//MONGODB_URL = "mongodb+srv://gauravghati:pisb6936@pisbdata.pbz9k.mongodb.net/mainwebsite?retryWrites=true&w=majority"
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
