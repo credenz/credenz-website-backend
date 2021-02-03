@@ -5,9 +5,9 @@ const c = require('./controller');
 // <--------------------- GET REQUEST ------------------------>
 router.get('/allevents', c.allevents);                                                      // all events
 router.get('/updates', c.updates);                                                          // all updates
-router.get('/user/:username', c.authToken, c.private, c.userdetials);                       // user details
+router.get('/user/:username', c.userdetials);                       // user details
 router.get('/:username/played', c.checkUserParams, c.authToken, c.allowAdmin, c.played);    // total played event by the user
-router.get('/:username/present', c.checkUserParams, c.authToken, c.allowAdmin, c.present);  // total present events by the user
+router.get('/:username/present', c.present);  // total present events by the user
 // router.get('/leaderboard', c.leaderboard);
 router.get('/sponsors', c.sponsors); 
 router.get('/regcount', c.regcount);

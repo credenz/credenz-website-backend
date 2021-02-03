@@ -240,7 +240,6 @@ async function registerforevent (event_username, username, price, trans_id, appr
     } 
 
     const reg = new Register({
-        _id: await Register.count() + 1,
         event_username: event_username,
         username: username, 
         price: price,
@@ -455,7 +454,6 @@ createteams = async (req, res) => {
         });
     }
 }
-
 
 
 // <---------------------- MIDDLE WARES ---------------------->
