@@ -29,8 +29,8 @@ payment = async (req, res) => {
             console.log(req.body)
 
             const request = require('request');
-            var username = process.env.IPPO_TEST_PUBLIC;
-            var password = process.env.IPPO_TEST_SECRET;
+            var username = process.env.IPPO_LIVE_PUBLIC;
+            var password = process.env.IPPO_LIVE_SECRET;
             var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
             var data = {
                 "amount": req.body.amount,
@@ -46,7 +46,8 @@ payment = async (req, res) => {
                 }
             }
             var options = {
-                url : 'https://api.ippopay.com/apitest/v1/pg/order/create',
+                //url : 'https://api.ippopay.com/apitest/v1/pg/order/create',
+                url :'https://api.ippopay.com/v1/order/create',
                 headers:{
                     'Content-Type': 'application/json',
                     "Authorization" : auth
@@ -57,8 +58,6 @@ payment = async (req, res) => {
                 res.status(200).json(JSON.parse(response.body))
                 console.log(body)
             })
-
-            
 
         } catch (err) {
             res.status(500).json({message: `Internal server error : ${err.message}`});
