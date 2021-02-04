@@ -1,8 +1,10 @@
 require('dotenv').config();
+const axios = require('axios');
 
 const jwt = require('jsonwebtoken');
 const { User, Event, Register, Update, Teams, Leaderboard, Sponsors } = require('./model');
 var nodemailer = require('nodemailer');
+const { response, request, application, json } = require('express');
 
 const ROLE = {
     BASIC: 'basic',
@@ -17,6 +19,53 @@ var transporter = nodemailer.createTransport({
         pass: process.env.IEEE_EMAIL_PASSWORD
     }
 });
+
+
+payment = async (req, res) => {
+
+    if(req.method === 'POST') {
+        try{
+
+            console.log(req.body)
+
+            const request = require('request');
+            var username = process.env.IPPO_LIVE_PUBLIC;
+            var password = process.env.IPPO_LIVE_SECRET;
+            var auth = "Basic " + new Buffer(username + ":" + password).toString("base64");
+            var data = {
+                "amount": req.body.amount,
+                "currency": "INR",
+                "payment_modes": "cc,dc,nb,upi" ,
+                "customer": {
+                "name": req.body.username,
+                "email": req.body.email,
+                "phone": {
+                        "country_code": "91" ,
+                        "national_number": req.body.phoneno
+                    }
+                }
+            }
+            var options = {
+                //url : 'https://api.ippopay.com/apitest/v1/pg/order/create',
+                url :'https://api.ippopay.com/v1/order/create',
+                headers:{
+                    'Content-Type': 'application/json',
+                    "Authorization" : auth
+                },
+              body:JSON.stringify(data)
+            }
+            request.post(options , function (error, response, body ) {
+                res.status(200).json(JSON.parse(response.body))
+                console.log(body)
+            })
+
+        } catch (err) {
+            res.status(500).json({message: `Internal server error : ${err.message}`});
+            console.log("Payement error" + err)
+        }
+    }
+}
+
 
 // Get('/allusers', c.authToken, c.onlyAdmin, c.allusers);
 allusers = async (req, res) => {
@@ -334,6 +383,71 @@ updates = async (req, res) => {
     }
 }
 
+leaderboard = async (req, res) => {
+    if(req.method == 'GET') {
+        var scores = await Leaderboard.find().sort({score: -1})
+        res.json(scores).status(200);
+    }
+    else if (req.method == 'POST') {
+
+        var user;
+        user = await User.findOne({username: req.body.username});
+
+        if(user) {
+/*
+            const score = new Leaderboard({
+                _id: await Leaderboard.count() + 1,
+               username: req.body.username,
+               college: req.body.college,
+               score: req.body.score
+           })
+           var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+*/
+
+            
+            var scores = await Leaderboard.findOne({username: req.body.username});
+            console.log(user)
+            
+
+            var score = ''
+
+            if(scores) {
+                console.log(scores)
+                console.log(scores.id)
+                console.log("If")
+                score = new Leaderboard({
+                    _id: scores.id,
+                   username: req.body.username,
+                   college: req.body.college,
+                   score: req.body.score + scores.score
+               })
+
+               var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+
+            }else {
+                console.log("else")
+                score = new Leaderboard({
+                    _id: await Leaderboard.count() + 1,
+                   username: req.body.username,
+                   college: req.body.college,
+                   score: req.body.score
+               })
+
+               var waitedscore = await score.save();
+            res.json(waitedscore).status(200);
+
+            }
+
+        }else {
+            res.json("User doesnt exist").status(400);
+        }
+        
+        
+    }
+}
+
 // Put('/:username/update', c.authToken, c.private, c.updateuser)
 updateuser = async (req, res) => {
     if (req.method==='PUT') {
@@ -518,9 +632,55 @@ checkUserParams = async (req, res, next) => {
 }
 
 
+resetPassword = async (req, res) => {
+
+    try{
+        
+    var user = await User.findOne({username: req.body.username});
+    
+    if(user) {
+        var emailVal = user.email;
+        console.log("emailVal" + emailVal)
+
+            var smtpTransport = nodemailer.createTransport({  
+                service: 'SendGrid',  
+                auth: {  
+                user: 'sakshee1120@gmail.com',  
+                pass: ''  
+                }  
+            });  
+
+            const mailOptions = {  
+                to: emailVal,  
+                from: 'sakshee1120@gmail.com',  
+                subject: 'Node.js Password Reset',  
+                text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +  
+                    'Please click on the following link, or paste this into your browser to complete the process:\n\n' +  
+                    'http://' + req.headers.host + '/reset/' + username + '\n\n' +  
+                    'If you did not request this, please ignore this email and your password will remain unchanged.\n'  
+            };  
+
+            smtpTransport.sendMail(mailOptions, function(err) {                 
+                console.log("HI:"+emailVal);  
+                res.json({status : 'success', message : 'An e-mail has been sent to ' + emailVal + ' with further instructions.'});              
+                done(err, 'done');  
+            });
+    }else {
+        res.json("Invalid user").status(403)
+    }
+    
+    
+
+    }catch(err){
+        res.json(err).status(400);
+    }
+
+}  
+  
 module.exports = {
     allusers, allevents, allregs, allteams, login, signup, register, played, present, eventlogin, 
     eventusers, updateuser, updates, userdetials, createteams, sponsors, allregsid, regcount,
+    payment,
     // resetPassword, leaderboard, 
 
     // MIDDLEWARES
