@@ -33,7 +33,6 @@ const event_schema = mongoose.Schema({
 }); 
 
 const register_schema = mongoose.Schema({
-    _id: {type: Number, require: true, unique: true},
     event_username: {type: String, require: true, lowercase: true},
     username: {type: String, require: true}, 
     price: {type: Number, require: true},
