@@ -127,6 +127,11 @@ signup = async (req, res) => {
                 ieeeid = req.body.ieeeid
             }
 
+            var clgID = 0; 
+            if (req.body.clgname === 'PICT') {
+                clgID = req.body.clgID
+            }
+
             const new_user = new User({
                 _id: await User.count() + 1,
                 username: req.body.username.toLowerCase(),
@@ -135,6 +140,7 @@ signup = async (req, res) => {
                 email: req.body.email,
                 phoneno: req.body.phoneno,
                 clgname: req.body.clgname,
+                clgID: req.body.clgID,
                 ieee: req.body.ieee,
                 role: ROLE.BASIC,
                 ieeeid: ieeeid
