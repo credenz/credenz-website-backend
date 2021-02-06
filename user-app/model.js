@@ -11,6 +11,7 @@ const user_schema = mongoose.Schema({
   role: { type: String, require: true },
   ieee: { type: Boolean, require: true },
   ieeeid: { type: String, require: true },
+  ispict: {type: Boolean, require: true}
 });
 
 const teams_schema = mongoose.Schema({
@@ -47,6 +48,7 @@ const register_schema = mongoose.Schema({
   outof_score: { type: Number, require: true, default: null },
   approved: { type: Boolean, require: true, default: false },
   transaction_id: { type: String, default: null },
+  reg_time: { type: Date, require: true }
 });
 
 const leaderboard_schema = mongoose.Schema({

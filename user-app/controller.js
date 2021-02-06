@@ -1,5 +1,4 @@
 require("dotenv").config();
-const axios = require("axios");
 
 const jwt = require("jsonwebtoken");
 const {
@@ -11,8 +10,8 @@ const {
   Leaderboard,
   Sponsors,
 } = require("./model");
+
 var nodemailer = require("nodemailer");
-const { response, request, application, json } = require("express");
 
 const ROLE = {
   BASIC: "basic",
@@ -153,6 +152,7 @@ signup = async (req, res) => {
         ieee: req.body.ieee,
         role: ROLE.BASIC,
         ieeeid: ieeeid,
+        ispict: req.body.isPict
       });
 
       const waiteduser = await new_user.save();
@@ -336,6 +336,7 @@ async function registerforevent(
     played: false,
     approved: approved,
     transaction_id: trans_id,
+    reg_time: Date.now()
   });
 
   const waitedreg = await reg.save();
