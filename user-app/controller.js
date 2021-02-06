@@ -642,17 +642,16 @@ sendmail = async (req, res) => {
     console.log(userDetails);
     console.log(userDetails.email);
     var events = await Register.find({ username: user });
-    var mailmsg = "You have successfully registered for Credenz Live\n\n";
+    var mailmsg = "Greetings from PISB! Thank you for participating in Credenz Live.\n\nPlease go through the below credentials for respective events carefully. The credentials won't be changed at any circumstances. Only those should be use to login to the event.\n\n";
     events.forEach((event) => {
-        console.log(event);
-        mailmsg+=`${event.event_username}\n username: ${event.username}\n password: ${event.random_pw}\n`;
+        mailmsg+=`Event : ${event.event_username}\nUsername: ${event.username}       ,       Password: ${event.random_pw}\n\n`;
     });
-    mailmsg+="Thank you,\nPISB";
+    mailmsg+="In case you face any technical challenges or still have questions and/or clarifications, please reach out through:\npisb.credenz20@gmail.com\n\nWith Best Regards,\nPICT IEEE Student Branch";
 
     var mailOptions = {
         from: process.env.IEEE_EMAIL,
         to: userDetails.email,
-        subject: 'Successful registration for Credenz Live',
+        subject: 'Credenz registration details',
         text: mailmsg
     };
 
