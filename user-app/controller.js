@@ -129,43 +129,48 @@ sponsors = async (req, res) => {
 };
 
 // Post('/signup', c.signup)
+// Post('/signup', c.signup)
 signup = async (req, res) => {
-  if (req.method === "POST") {
-    try {
-      const user = await User.findOne({ username: req.body.username });
-      if (user != null)
-        res.status(404).json({ message: "username Already Taken" });
+    if (req.method === 'POST') {
+        try {
+            const user = await User.findOne({username: req.body.username});  
+            if(user != null) res.status(404).json({message: 'username Already Taken'});
 
-      var ieeeid = 0;
-      if (req.body.ieee == true) {
-        ieeeid = req.body.ieeeid;
-      }
+            var ieeeid = 0; 
+            if (req.body.ieee == true) {
+                ieeeid = req.body.ieeeid
+            }
 
-      const new_user = new User({
-        _id: (await User.count()) + 1,
-        username: req.body.username.toLowerCase(),
-        name: req.body.name,
-        password: req.body.password,
-        email: req.body.email,
-        phoneno: req.body.phoneno,
-        clgname: req.body.clgname,
-        ieee: req.body.ieee,
-        role: ROLE.BASIC,
-        ieeeid: ieeeid,
-        ispict: req.body.isPict
-      });
+            var clgID = 0; 
+            if (req.body.clgname === 'PICT') {
+                clgID = req.body.clgID
+            }
 
-      const waiteduser = await new_user.save();
+            const new_user = new User({
+                _id: await User.count() + 1,
+                username: req.body.username.toLowerCase(),
+                name: req.body.name,
+                password: req.body.password,
+                email: req.body.email,
+                phoneno: req.body.phoneno,
+                clgname: req.body.clgname,
+                clgID: req.body.clgID,
+                ieee: req.body.ieee,
+                role: ROLE.BASIC,
+                ieeeid: ieeeid
+            });
             
-			const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
-			res.json({accessToken: accessToken}).status(201);
+            const waiteduser = await new_user.save();
+            
+            const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
+            res.json({accessToken: accessToken}).status(201);
+        } catch (err) {
+            res.status(400).json({ message: `post internal error: ${err}` });
+        }
 
-		} catch (err) {
-				res.status(400).json({ message: `post internal error: ${err}` });
-		}
-  }
+    }
+  
 };
-
 // Post('/login', c.login)
 login = async (req, res) => {
   if (req.method === "POST") {
