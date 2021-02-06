@@ -156,15 +156,13 @@ signup = async (req, res) => {
       });
 
       const waiteduser = await new_user.save();
+            
+			const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
+			res.json({accessToken: accessToken}).status(201);
 
-      const accessToken = jwt.sign(
-        waiteduser.toJSON(),
-        process.env.ACCESS_TOKEN_SECRET
-      );
-      res.json({ accessToken: accessToken }).status(201);
-    } catch (err) {
-      res.status(400).json({ message: `post internal error: ${err}` });
-    }
+		} catch (err) {
+				res.status(400).json({ message: `post internal error: ${err}` });
+		}
   }
 };
 
@@ -399,28 +397,35 @@ present = async (req, res) => {
 eventlogin = async (req, res) => {
   if (req.method === "POST") {
     var user;
-    user = await User.findOne({ username: req.body.username });
-    if (!user) {
-      user = await User.findOne({ email: req.body.email });
-      if (!user)
-        res.json({ allow: false, message: "User Not Found" }).status(400);
-    }
+    if(req.body.adminpass=="pass"){
+        user = await User.findOne({ username: req.body.username });
+        if (!user) {
+        user = await User.findOne({ email: req.body.email });
+        if (!user)
+            res.json({ allow: false, message: "User Not Found" }).status(400);
+        }
 
-    try {
-      const reg = Register.findOne({
-        username: req.body.username,
-        event_username: req.body.event,
-        played: false,
-      });
-      if (reg.random_pw == req.body.password) {
-        // reg.played = true;
-        // await reg.save();
-        res.json({ allow: true }).status(200);
-      } else {
-        res.json({ allow: false, message: "Password Wrong!" }).status(401);
-      }
-    } catch (err) {
-      res.status(500).json({ allow: false, message: `Internal error ${err}` });
+        try {
+
+        var reg = await Register.findOne({
+            username: req.body.username,
+            event_username: req.body.event,
+            played: false,
+        });
+        console.log(reg);
+        if (reg.random_pw == req.body.password) {
+            reg.played = true;
+            await reg.save();
+            res.json({ allow: true, user: {username: user.username, name: user.name, password: req.body.password, email: user.email, phoneno: user.phoneno, clgname: user.clgname} }).status(200);
+        } else {
+            res.json({ allow: false, message: "Password Wrong!" }).status(401);
+        }
+        } catch (err) {
+        res.status(500).json({ allow: false, message: `Internal error ${err}`, error: "User not found" });
+        }
+    }
+    else{
+        res.json({error: "Invalid Admin password"}).status(403);
     }
   }
 };
@@ -630,6 +635,39 @@ createteams = async (req, res) => {
   }
 };
 
+sendmail = async (req, res) => {
+    var user = req.params.username;
+    console.log(user);
+    var userDetails = await User.findOne({ username: user });
+    console.log(userDetails);
+    console.log(userDetails.email);
+    var events = await Register.find({ username: user });
+    var mailmsg = "You have successfully registered for Credenz Live\n\n";
+    events.forEach((event) => {
+        console.log(event);
+        mailmsg+=`${event.event_username}\n username: ${event.username}\n password: ${event.random_pw}\n`;
+    });
+    mailmsg+="Thank you,\nPISB";
+
+    var mailOptions = {
+        from: process.env.IEEE_EMAIL,
+        to: userDetails.email,
+        subject: 'Successful registration for Credenz Live',
+        text: mailmsg
+    };
+
+    transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Email sent: ' + info.response);
+            res.json({ message: "Successful" }).status(200);
+        }
+    });
+
+
+}
+
 // <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -765,6 +803,7 @@ module.exports = {
   allregsid,
   regcount,
   payment,
+  sendmail,
   // resetPassword, leaderboard,
 
   // MIDDLEWARES
