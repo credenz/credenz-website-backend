@@ -157,7 +157,8 @@ signup = async (req, res) => {
                 clgID: req.body.clgID,
                 ieee: req.body.ieee,
                 role: ROLE.BASIC,
-                ieeeid: ieeeid
+                ieeeid: ieeeid,
+                ispict: req.body.isPict
             });
             
             const waiteduser = await new_user.save();
