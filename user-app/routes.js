@@ -17,7 +17,8 @@ router.get('/regcount', c.regcount);
 router.post('/signup', c.signup);                                                          // Signup
 router.post('/login', c.login);
 router.post('/:username/sendmail', c.sendmail);                                                            // Login
-router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
+router.post('/:username/:event', c.checkUserParams, c.register);
+//router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
 router.post('/addteam', c.authToken, c.createteams);
 router.post('/payment', c.payment);   
                                       // add Teams

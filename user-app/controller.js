@@ -148,7 +148,7 @@ signup = async (req, res) => {
 
             const new_user = new User({
                 _id: await User.count() + 1,
-                username: req.body.username.toLowerCase(),
+                username: req.body.username,
                 name: req.body.name,
                 password: req.body.password,
                 email: req.body.email,
@@ -350,17 +350,28 @@ async function registerforevent(
 // Post('/:username/:event', c.authToken, c.checkUserParams, c.register)
 register = async (req, res) => {
   if (req.method === "POST") {
-    try {
-      var registrations = await registerforevent(
-        req.params.event,
-        req.params.username,
-        req.params_event.event_price,
-        req.body.trans_id,
-        req.body.approved
-      );
-      res.status(201).json(registrations);
-    } catch (err) {
-      res.status(500).json({ message: `Post Internal Error: ${err}` });
+    var usr = await User.findOne({ username: req.params.username });
+    var reg = await Register.findOne({ username: req.params.username, event_username: req.params.event });
+
+    console.log(usr.ispict);
+    console.log(reg);
+    if((usr.ispict === true) && (reg)){
+      res.json({message: "Already registered" }).status(400);
+    }
+    else{
+      try {
+        //console.log(req.params_event);
+        var registrations = await registerforevent(
+          req.params.event,
+          req.params.username,
+          req.params_event.event_price,
+          req.body.trans_id,
+          req.body.approved
+        );
+        res.status(201).json(registrations);
+      } catch (err) {
+        res.status(500).json({ message: `Post Internal Error: ${err}` });
+      }
     }
   }
 };
@@ -877,3 +888,14 @@ module.exports = {
 //         }
 //     }
 // }
+
+
+// Eventlogin
+// {
+// 	"username": "bskad",
+// 	"event": "clash",
+// 	"password": "wUxMOSE3",
+// 	"adminpass": "pass"
+// }
+
+
