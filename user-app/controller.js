@@ -431,8 +431,8 @@ eventlogin = async (req, res) => {
         });
         console.log(reg);
         if (reg.random_pw == req.body.password) {
-            reg.played = true;
-            await reg.save();
+            // reg.played = true;
+            // await reg.save();
             res.json({ allow: true, user: {username: user.username, name: user.name, password: req.body.password, email: user.email, phoneno: user.phoneno, clgname: user.clgname} }).status(200);
         } else {
             res.json({ allow: false, error : "Password Wrong!" }).status(401);
