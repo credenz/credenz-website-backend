@@ -66,7 +66,7 @@ payment = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ erro: `Internal server error : ${err.error}` });
       console.log("Payement error" + err);
     }
   }
@@ -81,7 +81,7 @@ allusers = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 };
@@ -95,7 +95,7 @@ allregs = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 };
@@ -109,7 +109,7 @@ allteams = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 };
@@ -123,7 +123,7 @@ sponsors = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 };
@@ -134,7 +134,7 @@ signup = async (req, res) => {
     if (req.method === 'POST') {
         try {
             const user = await User.findOne({username: req.body.username});  
-            if(user != null) res.status(404).json({message: 'username Already Taken'});
+            if(user != null) res.status(404).json({error: 'username Already Taken'});
 
             var ieeeid = 0; 
             if (req.body.ieee == true) {
@@ -166,7 +166,7 @@ signup = async (req, res) => {
             const accessToken = jwt.sign(waiteduser.toJSON(), process.env.ACCESS_TOKEN_SECRET);
             res.json({accessToken: accessToken}).status(201);
         } catch (err) {
-            res.status(400).json({ message: `post internal error: ${err}` });
+            res.status(400).json({ error: `post internal error: ${err}` });
         }
 
     }
@@ -178,7 +178,7 @@ login = async (req, res) => {
     var user = await User.findOne({ username: req.body.username });
     if (!user) {
       user = await User.findOne({ email: req.body.username });
-      if (!user) res.json({ message: "User Not Found" }).status(400);
+      if (!user) res.json({ error: "User Not Found" }).status(400);
     }
 
     try {
@@ -189,10 +189,10 @@ login = async (req, res) => {
         );
         res.json({ accessToken: accessToken });
       } else {
-        res.json({ message: "Password Wrong!" });
+        res.json({ error: "Password Wrong!" });
       }
     } catch (err) {
-      res.status(500).json({ message: `Internal error ${err}` });
+      res.status(500).json({ error: `Internal error ${err}` });
     }
   }
 };
@@ -202,7 +202,7 @@ userdetials = async (req, res) => {
   if (req.method === "GET") {
     var user = await User.findOne({ username: req.params.username });
     if (!user) {
-      res.json({ message: "User Not Found" }).status(400);
+      res.json({ error: "User Not Found" }).status(400);
     }
     res.json(user).status(200);
   }
@@ -216,7 +216,7 @@ allregsid = async (req, res) => {
 
   if (req.method === "GET") {
     if (!registration) {
-      res.json({ message: "Registration Not Found" }).status(400);
+      res.json({ error : "Registration Not Found" }).status(400);
     }
     res.json(registration).status(200);
   }
@@ -256,7 +256,7 @@ allevents = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 
@@ -280,7 +280,7 @@ allevents = async (req, res) => {
       const waitedevent = await event.save();
       res.json(waitedevent).status(201);
     } catch (err) {
-      res.status(400).json({ message: `post internal error: ${err}` });
+      res.status(400).json({ error: `post internal error: ${err}` });
     }
   }
 
@@ -301,7 +301,7 @@ allevents = async (req, res) => {
 
       res.json(oneevent).status(200);
     } catch (err) {
-      res.json({ message: `Internsal Error: ${err}` }).status(500);
+      res.json({ error: `Internsal Error: ${err}` }).status(500);
     }
   }
 };
@@ -356,7 +356,7 @@ register = async (req, res) => {
     console.log(usr.ispict);
     console.log(reg);
     if((usr.ispict === true) && (reg)){
-      res.json({message: "Already registered" }).status(400);
+      res.json({error: "Already registered" }).status(400);
     }
     else{
       try {
@@ -370,7 +370,7 @@ register = async (req, res) => {
         );
         res.status(201).json(registrations);
       } catch (err) {
-        res.status(500).json({ message: `Post Internal Error: ${err}` });
+        res.status(500).json({ error: `Post Internal Error: ${err}` });
       }
     }
   }
@@ -388,7 +388,7 @@ played = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error: `Internal server error : ${err.message}` });
     }
   }
 };
@@ -405,7 +405,7 @@ present = async (req, res) => {
     } catch (err) {
       res
         .status(500)
-        .json({ message: `Internal server error : ${err.message}` });
+        .json({ error : `Internal server error : ${err.message}` });
     }
   }
 };
@@ -419,7 +419,7 @@ eventlogin = async (req, res) => {
         if (!user) {
         user = await User.findOne({ email: req.body.email });
         if (!user)
-            res.json({ allow: false, message: "User Not Found" }).status(400);
+            res.json({ allow: false, error: "User Not Found" }).status(400);
         }
 
         try {
@@ -435,10 +435,10 @@ eventlogin = async (req, res) => {
             await reg.save();
             res.json({ allow: true, user: {username: user.username, name: user.name, password: req.body.password, email: user.email, phoneno: user.phoneno, clgname: user.clgname} }).status(200);
         } else {
-            res.json({ allow: false, message: "Password Wrong!" }).status(401);
+            res.json({ allow: false, error : "Password Wrong!" }).status(401);
         }
         } catch (err) {
-        res.status(500).json({ allow: false, message: `Internal error ${err}`, error: "User not found" });
+        res.status(500).json({ allow: false, error : `Internal error ${err}`, error: "User not found" });
         }
     }
     else{
@@ -535,7 +535,7 @@ updateuser = async (req, res) => {
       await user.save();
       res.json(user).status(200);
     } catch (err) {
-      res.json({ message: `Internal Error ${err}` }).status(500);
+      res.json({ error: `Internal Error ${err}` }).status(500);
     }
   }
 };
@@ -546,7 +546,7 @@ regcount = async (req, res) => {
       var count = await Register.find().count();
       res.json({ count: count });
     } catch (err) {
-      res.json({ message: `Internal Error ${err}` }).status(500);
+      res.json({ error: `Internal Error ${err}` }).status(500);
     }
   }
 };
@@ -583,7 +583,7 @@ createteams = async (req, res) => {
     try {
       var event = await Event.findOne({ event_username: req.body.event_name });
     } catch (err) {
-      res.json({ message: "Event not found" }).status(400);
+      res.json({ error: "Event not found" }).status(400);
     }
 
     // check for repeated users
@@ -591,7 +591,7 @@ createteams = async (req, res) => {
       for (var j = 0; j < players.length; j++) {
         if (i != j && players[i] == players[j]) {
           console.log("YES, CHECK 1");
-          res.json({ message: "Username Repeated" }).status(400);
+          res.json({ error: "Username Repeated" }).status(400);
         }
       }
     }
@@ -647,7 +647,7 @@ createteams = async (req, res) => {
         res.json(team).status(200);
       })
       .catch((err) => {
-        res.json({ message: err }).status(400);
+        res.json({ error: err }).status(400);
       });
   }
 };
@@ -677,7 +677,7 @@ sendmail = async (req, res) => {
             console.log(error);
         } else {
             console.log('Email sent: ' + info.response);
-            res.json({ message: "Successful" }).status(200);
+            res.json({ error: "Successful" }).status(200);
         }
     });
 
@@ -689,11 +689,11 @@ authToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   // Bearer TOKEN
   const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) res.status(401).json({ message: "Invaild Token" });
+  if (token == null) res.status(401).json({ error: "Invaild Token" });
 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, async (err, user) => {
     if (err) {
-      res.status(400).json({ message: err.message });
+      res.status(400).json({ error: err.error });
       // if (req.method === 'GET') res.redirect(301, '/login');
       // else if (req.method === 'POST') res.redirect(307, '/login');
     }
@@ -705,7 +705,7 @@ authToken = (req, res, next) => {
 // Only Owner can access the API
 private = (req, res, next) => {
   if (req.user.username !== req.params.username) {
-    res.json({ message: "You can only view your Data" }).status(400);
+    res.json({ error: "You can only view your Data" }).status(400);
   }
   next();
 };
@@ -719,13 +719,13 @@ allowAdmin = (req, res, next) => {
     next();
     return;
   }
-  res.status(403).json({ message: "Accessed not allowed!" });
+  res.status(403).json({ error: "Accessed not allowed!" });
 };
 
 // Only admins are allowed to access user
 onlyAdmin = (req, res, next) => {
   if (req.user.role != ROLE.ADMIN) {
-    res.status(403).json({ message: "Accessed not allowed!" });
+    res.status(403).json({ error: "Accessed not allowed!" });
   }
   next();
 };
@@ -734,17 +734,17 @@ onlyAdmin = (req, res, next) => {
 checkUserParams = async (req, res, next) => {
   try {
     const user = await User.findOne({ username: req.params.username });
-    if (user === null) res.status(400).json({ message: `User doesn't exist` });
+    if (user === null) res.status(400).json({ error: `User doesn't exist` });
 
     var event;
     if (req.params.event != null) {
       event = await Event.findOne({ event_username: req.params.event });
       if (event === null)
-        res.status(400).json({ message: `Event doesn't exist!` });
+        res.status(400).json({ error: `Event doesn't exist!` });
       req.params_event = event;
     }
   } catch (err) {
-    res.status(500).json({ message: `Internal error ${err}` });
+    res.status(500).json({ error: `Internal error ${err}` });
   }
   next();
 };
@@ -784,7 +784,7 @@ resetPassword = async (req, res) => {
         console.log("HI:" + emailVal);
         res.json({
           status: "success",
-          message:
+          error:
             "An e-mail has been sent to " +
             emailVal +
             " with further instructions.",

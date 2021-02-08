@@ -16,7 +16,7 @@ router.get('/regcount', c.regcount);
 // <--------------------- POST REQUEST ------------------------>
 router.post('/signup', c.signup);                                                          // Signup
 router.post('/login', c.login);
-router.post('/:username/sendmail', c.sendmail);                                                            // Login
+router.get('/:username/sendmail', c.sendmail);                                                            // Login
 router.post('/:username/:event', c.checkUserParams, c.register);
 //router.post('/:username/:event', c.checkUserParams, c.authToken, c.private, c.register);   // User Register for the Event
 router.post('/addteam', c.authToken, c.createteams);
@@ -35,7 +35,7 @@ router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers);          //
 router.get('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);     // View that registration
 router.post('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);    // Approve Registrations with given ID
 router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);               // Adding Update
-router.post('/eventlogin', c.eventlogin);     // Login From the main Event
+router.post('/eventlogin', c.eventlogin);                                     // Login From the main Event
 router.post('/addevent', c.authToken, c.onlyAdmin, c.allevents);        // Add any event
 router.put('/edit/:event', c.authToken, c.onlyAdmin, c.allevents);      // Edit particular Event
 
