@@ -11,7 +11,8 @@ const {
   Sponsors,
 } = require("./model");
 
-var nodemailer = require("nodemailer");
+const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
 
 const ROLE = {
   BASIC: "basic",
@@ -19,14 +20,50 @@ const ROLE = {
 };
 
 // mail authentication
-var transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  auth: {
-    user: process.env.IEEE_EMAIL,
-    pass: process.env.IEEE_EMAIL_PASSWORD,
-  },
-});
+const oAuth2Client = new google.auth.OAuth2(process.env.CLIENT_ID, process.env.CLIENT_SECRET, process.env.REDIRECT_URI)
+oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN })
+
+
+sendmail = async (req, res) => {
+  var accessToken = await oAuth2Client.getAccessToken();
+
+  var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.IEEE_EMAIL,
+      clientId: process.env.CLIENT_ID,
+      clientSecret: process.env.CLIENT_SECRET,
+      refreshToken: process.env.REFRESH_TOKEN,
+      accessToken: accessToken
+    },
+  });
+
+  var user = req.params.username;
+  var userDetails = await User.findOne({ username: user });
+  var events = await Register.find({ username: user });
+  var mailmsg = "Greetings from PISB! Thank you for participating in Credenz Live.\n\nPlease go through the below credentials for respective events carefully. The credentials won't be changed at any circumstances. Only those should be use to login to the event.\n\n";
+  events.forEach((event) => {
+      mailmsg+=`Event : ${event.event_username}\nUsername: ${event.username}       ,       Password: ${event.random_pw}\n\n`;
+  });
+  mailmsg+="In case you face any technical challenges or still have questions and/or clarifications, please reach out through:\npisb.credenz20@gmail.com\n\nSchedule for Credenz Live: \nhttps://docs.google.com/spreadsheets/d/1BG5cq5WYoyE7xJb4_gSp62sB0XKpAvty9JhJ984s1lM/edit?usp=sharing\n\nWith Best Regards,\nPICT IEEE Student Branch";
+
+  var mailOptions = {
+      from: `${userDetails.username} <${process.env.IEEE_EMAIL}>`,
+      to: userDetails.email,
+      subject: 'Credenz registration details',
+      text: mailmsg
+  };
+
+  await transporter.sendMail(mailOptions, function(error, info){
+      if (error) {
+          console.log(error);
+      } else {
+          console.log('Email sent: ' + info.response);
+          res.json({ message: "Successful" }).status(200);
+      }
+  });
+}
 
 payment = async (req, res) => {
   if (req.method === "POST") {
@@ -178,6 +215,9 @@ login = async (req, res) => {
   if (req.method === "POST") {
     var user = await User.findOne({ username: req.body.username });
     if (!user) {
+      user = await User.findOne({ username: req.body.username.toLowerCase() });
+    }
+    else if (!user) {
       user = await User.findOne({ email: req.body.username });
       if (!user) res.json({ error: "User Not Found" }).status(400);
     }
@@ -652,37 +692,6 @@ createteams = async (req, res) => {
       });
   }
 };
-
-sendmail = async (req, res) => {
-    var user = req.params.username;
-    console.log(user);
-    var userDetails = await User.findOne({ username: user });
-    console.log(userDetails);
-    console.log(userDetails.email);
-    var events = await Register.find({ username: user });
-    var mailmsg = "Greetings from PISB! Thank you for participating in Credenz Live.\n\nPlease go through the below credentials for respective events carefully. The credentials won't be changed at any circumstances. Only those should be use to login to the event.\n\n";
-    events.forEach((event) => {
-        mailmsg+=`Event : ${event.event_username}\nUsername: ${event.username}       ,       Password: ${event.random_pw}\n\n`;
-    });
-    mailmsg+="In case you face any technical challenges or still have questions and/or clarifications, please reach out through:\npisb.credenz20@gmail.com\n";
-    mailmsg += "Schedule for Credenz Live:\n https://docs.google.com/spreadsheets/d/1BG5cq5WYoyE7xJb4_gSp62sB0XKpAvty9JhJ984s1lM/edit?usp=sharing \n\nWith Best Regards,\nPICT IEEE Student Branch"
-
-    var mailOptions = {
-        from: process.env.IEEE_EMAIL,
-        to: userDetails.email,
-        subject: 'Credenz registration details',
-        text: mailmsg
-    };
-
-    transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-            console.log(error);
-        } else {
-            console.log('Email sent: ' + info.response);
-            res.json({ error: "Successful" }).status(200);
-        }
-    });
-}
 
 // <---------------------- MIDDLE WARES ---------------------->
 authToken = (req, res, next) => {
