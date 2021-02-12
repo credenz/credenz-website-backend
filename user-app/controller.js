@@ -20,7 +20,8 @@ const ROLE = {
 
 // mail authentication
 var transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
   auth: {
     user: process.env.IEEE_EMAIL,
     pass: process.env.IEEE_EMAIL_PASSWORD,
@@ -663,7 +664,8 @@ sendmail = async (req, res) => {
     events.forEach((event) => {
         mailmsg+=`Event : ${event.event_username}\nUsername: ${event.username}       ,       Password: ${event.random_pw}\n\n`;
     });
-    mailmsg+="In case you face any technical challenges or still have questions and/or clarifications, please reach out through:\npisb.credenz20@gmail.com\n\nWith Best Regards,\nPICT IEEE Student Branch";
+    mailmsg+="In case you face any technical challenges or still have questions and/or clarifications, please reach out through:\npisb.credenz20@gmail.com\n";
+    mailmsg += "Schedule for Credenz Live:\n https://docs.google.com/spreadsheets/d/1BG5cq5WYoyE7xJb4_gSp62sB0XKpAvty9JhJ984s1lM/edit?usp=sharing \n\nWith Best Regards,\nPICT IEEE Student Branch"
 
     var mailOptions = {
         from: process.env.IEEE_EMAIL,
@@ -680,8 +682,6 @@ sendmail = async (req, res) => {
             res.json({ error: "Successful" }).status(200);
         }
     });
-
-
 }
 
 // <---------------------- MIDDLE WARES ---------------------->

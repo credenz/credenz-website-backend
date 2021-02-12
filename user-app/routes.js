@@ -31,7 +31,7 @@ router.put('/:username/update', c.authToken, c.private, c.updateuser);  // Updat
 router.get('/allteams', c.createteams);                                       // All teams
 router.get('/allusers', c.allusers);                                          // All Users
 router.get('/allregs', c.authToken, c.onlyAdmin, c.allregs);                  // All registrations
-router.get('/event/:event', c.authToken, c.onlyAdmin, c.eventusers);          // All registrations of the event
+router.get('/event/:event', c.eventusers);          // All registrations of the event
 router.get('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);     // View that registration
 router.post('/admin/allregs/:id',  c.authToken, c.onlyAdmin ,c.allregsid);    // Approve Registrations with given ID
 router.post('/addupdate', c.authToken, c.onlyAdmin, c.updates);               // Adding Update
